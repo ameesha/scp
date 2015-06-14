@@ -1,7 +1,0 @@
-<resources>
-    <string name="app_name">Where You App</string>
-
-    <string name="text1">text1</string>
-    <string name="current_location">Location!</string>
-    <string name="action_settings">Settings</string>
-</resources>
