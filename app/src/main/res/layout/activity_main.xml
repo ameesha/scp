@@ -15,4 +15,11 @@
         android:layout_height="wrap_content"
         android:hint="@string/current_location" />
 
+    <WebView
+        android:id="@+id/webview"
+        android:layout_width="400dp"
+        android:layout_height="400dp"
+        android:layout_below="@id/current_location"
+        />
+
 </RelativeLayout>
