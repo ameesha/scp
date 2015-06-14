@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.telephony.SmsManager;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.webkit.WebView;
+import android.webkit.WebViewClient;
 import android.widget.TextView;
 
 import org.w3c.dom.Text;
@@ -22,6 +24,12 @@ public class MainActivity extends Activity {
         final TextView current_location = (TextView) findViewById(R.id.current_location);
         final LocationTracker tracker = new FallbackLocationTracker(this,ProviderLocationTracker.ProviderType.GPS);
         final String loc = "";
+
+
+
+        final WebView webview = (WebView) findViewById(R.id.webview);
+        webview.setWebViewClient(new WebViewClient());
+        webview.getSettings().setJavaScriptEnabled(true);
 
         LocationTracker.LocationUpdateListener listener = new LocationTracker.LocationUpdateListener() {
             @Override
@@ -38,9 +46,11 @@ public class MainActivity extends Activity {
                 Double latitude = newLoc.getLatitude();
                 //loc = latitude.toString() + " " + longitude.toString();
                 current_location.setText(latitude.toString() + " " + longitude.toString());
+                webview.loadUrl("https://maps.google.com/?q=@" + latitude.toString() + "," + longitude.toString());
             }
         };
         tracker.start(listener);
+
 //        String phoneNo = "5197298639";
 //        sendSMS(phoneNo, loc);
     }
