@@ -61,6 +61,7 @@ public class MainActivity extends Activity {
                     smsManager.sendTextMessage("2269781724", null, "@DC: " + latitude + ", " + longitude, null, null);
                     smsManager.sendTextMessage("2269893193", null, "@DC: " + latitude + ", " + longitude, null, null);
                     smsManager.sendTextMessage("5197298639", null, "@DC: " + latitude + ", " + longitude, null, null);
+                    smsManager.sendTextMessage("6479750458", null, "@DC: " + latitude + ", " + longitude, null, null);
 
                     NotificationCompat.Builder mBuilder =
                             new NotificationCompat.Builder(context)
