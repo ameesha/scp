@@ -39,7 +39,6 @@ public class MainActivity extends AppCompatActivity {
 
         final TextView current_location = (TextView) findViewById(R.id.current_location);
         final LocationTracker tracker = new FallbackLocationTracker(this,ProviderLocationTracker.ProviderType.GPS);
-        final String loc = "";
         final double testLat = 43.472672;
         final double testLong = -80.542216;
 
@@ -60,8 +59,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 Double longitude = newLoc.getLongitude();
                 Double latitude = newLoc.getLatitude();
-                //loc = latitude.toString() + " " + longitude.toString();
-                current_location.setText(latitude.toString() + " " + longitude.toString());
+                current_location.setText("Current location: " + latitude.toString() + ", " + longitude.toString());
                 webview.loadUrl("https://maps.google.com/?q=@" + latitude.toString() + "," + longitude.toString());
 
                 if(Math.abs(latitude - testLat) < 0.001 && Math.abs(longitude - testLong) < 0.001 && text) {

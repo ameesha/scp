@@ -14,7 +14,8 @@
             android:layout_height="@dimen/abc_action_bar_default_height_material"
             android:layout_width="match_parent"
             android:minHeight="@dimen/abc_action_bar_default_height_material"
-            android:background="?attr/colorPrimary">
+            android:background="?attr/colorPrimary"
+            android:theme="@style/ThemeOverlay.AppCompat.Dark">
         </android.support.v7.widget.Toolbar>
 
         <TextView android:id="@+id/current_location"
