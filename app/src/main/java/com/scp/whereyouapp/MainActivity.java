@@ -2,12 +2,12 @@ package com.scp.whereyouapp;
 
 import android.app.Activity;
 import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.Context;
-import android.content.Intent;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.Toolbar;
 import android.telephony.SmsManager;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -15,24 +15,25 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.TextView;
 
-import org.w3c.dom.Text;
 
-
-public class MainActivity extends Activity {
+public class MainActivity extends AppCompatActivity {
     public boolean text = true;
     public Context context =  this;
+    private Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
+        setTitle("Where You App");
+
         final TextView current_location = (TextView) findViewById(R.id.current_location);
         final LocationTracker tracker = new FallbackLocationTracker(this,ProviderLocationTracker.ProviderType.GPS);
         final String loc = "";
         final double testLat = 43.472672;
         final double testLong = -80.542216;
-
-
 
         final WebView webview = (WebView) findViewById(R.id.webview);
         webview.setWebViewClient(new WebViewClient());
