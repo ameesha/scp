@@ -8,10 +8,15 @@
     <uses-permission android:name="android.permission.RECEIVE_SMS" />
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+
+    <uses-feature
+        android:glEsVersion="0x00020000"
+        android:required="true" />
 
     <application
         android:allowBackup="true"
-        android:icon="@mipmap/ic_launcher"
+        android:icon="@drawable/launcher_icon"
         android:label="@string/app_name"
         android:theme="@style/AppTheme" >
         <activity
@@ -26,6 +31,22 @@
         <activity
             android:name=".drawer"
             android:label="@string/title_activity_drawer" >
+        </activity>
+
+        <meta-data
+            android:name="com.google.android.gms.version"
+            android:value="@integer/google_play_services_version" />
+        <meta-data
+            android:name="com.google.android.geo.API_KEY"
+            android:value="AIzaSyCsZHwzV0cyRwEtL13ZXLS_WUoaUliiBzk" />
+
+        <activity
+            android:name=".Geocode"
+            android:label="@string/title_activity_geocode" >
+        </activity>
+        <activity
+            android:name=".TripActivity"
+            android:label="@string/title_activity_trip" >
         </activity>
     </application>
 

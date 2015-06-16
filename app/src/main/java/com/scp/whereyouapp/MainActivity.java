@@ -1,23 +1,44 @@
 package com.scp.whereyouapp;
 
+import android.app.Fragment;
+import android.app.FragmentManager;
+import android.app.FragmentTransaction;
+import android.app.IntentService;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.Intent;
+import android.location.Address;
+import android.location.Geocoder;
 import android.location.Location;
 import android.os.Bundle;
 import android.support.v4.app.NotificationCompat;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.SmsManager;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.WebView;
-import android.webkit.WebViewClient;
+import android.webkit.WebViewFragment;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.MapFragment;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.BitmapDescriptorFactory;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.Marker;
+import com.google.android.gms.maps.model.MarkerOptions;
+
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Locale;
 
 
 public class MainActivity extends AppCompatActivity {
@@ -26,49 +47,63 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private ListView mDrawerList;
     private ArrayAdapter<String> mAdapter;
+    private DrawerLayout mDrawerLayout;
+    private GoogleMap map;
+    private Marker cur_loc_marker;
+    private TextView current_location;
+    private int selectedPosition;
+    private final String[] osArray = { "Home", "Users", "Trips", "Location Log", "Settings" };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
+        map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
         setSupportActionBar(toolbar);
 
+
         mDrawerList = (ListView)findViewById(R.id.navList);
+        mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         addDrawerItems();
 
-        final TextView current_location = (TextView) findViewById(R.id.current_location);
+        current_location = (TextView) findViewById(R.id.current_location);
         final LocationTracker tracker = new FallbackLocationTracker(this,ProviderLocationTracker.ProviderType.GPS);
         final double testLat = 43.472672;
         final double testLong = -80.542216;
+        final LatLng home = new LatLng(43.477794,-80.537274);
+        final LatLng work = new LatLng(43.473929,-80.546237);
 
-        final WebView webview = (WebView) findViewById(R.id.webview);
-        webview.setWebViewClient(new WebViewClient());
-        webview.getSettings().setJavaScriptEnabled(true);
 
         LocationTracker.LocationUpdateListener listener = new LocationTracker.LocationUpdateListener() {
             @Override
             public void onUpdate(Location oldLoc, long oldTime, Location newLoc, long newTime) {
-                if (tracker.hasLocation()) {
-                }
-                else {
+                if (!tracker.hasLocation()) {
                     current_location.setText("No location found");
                 }
                 if (tracker.hasPossiblyStaleLocation()) {
                     current_location.setText("Last known location: " + tracker.getPossiblyStaleLocation().getLatitude() + " " + tracker.getPossiblyStaleLocation().getLongitude());
                 }
-                Double longitude = newLoc.getLongitude();
-                Double latitude = newLoc.getLatitude();
-                current_location.setText("Current location: " + latitude.toString() + ", " + longitude.toString());
-                webview.loadUrl("https://maps.google.com/?q=@" + latitude.toString() + "," + longitude.toString());
+                LatLng cur_loc = new LatLng(newLoc.getLatitude(), newLoc.getLongitude());
+                String addr;
 
-                if(Math.abs(latitude - testLat) < 0.001 && Math.abs(longitude - testLong) < 0.001 && text) {
+                if((addr = getAddress(cur_loc.latitude, cur_loc.longitude)) != "") {
+                    current_location.setText("Current location: " + addr);
+                }
+
+                map.addMarker(new MarkerOptions().position(cur_loc).title("Current location").snippet(addr));
+                map.addMarker(new MarkerOptions().position(home).title("Home").snippet(getAddress(home.latitude, home.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+                map.addMarker(new MarkerOptions().position(work).title("Work").snippet(getAddress(work.latitude, work.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+                map.setMyLocationEnabled(true);
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(cur_loc, 13));
+
+                if(Math.abs(cur_loc.latitude - testLat) < 0.001 && Math.abs(cur_loc.longitude - testLong) < 0.001 && text) {
                     text = false;
                     SmsManager smsManager = SmsManager.getDefault();
-                    smsManager.sendTextMessage("2269781724", null, "@DC: " + latitude + ", " + longitude, null, null);
-                    smsManager.sendTextMessage("2269893193", null, "@DC: " + latitude + ", " + longitude, null, null);
-                    smsManager.sendTextMessage("5197298639", null, "@DC: " + latitude + ", " + longitude, null, null);
-                    smsManager.sendTextMessage("6479750458", null, "@DC: " + latitude + ", " + longitude, null, null);
+                    smsManager.sendTextMessage("2269781724", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
+                    smsManager.sendTextMessage("2269893193", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
+                    smsManager.sendTextMessage("5197298639", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
+                    smsManager.sendTextMessage("6479750458", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
 
                     NotificationCompat.Builder mBuilder =
                             new NotificationCompat.Builder(context)
@@ -96,8 +131,26 @@ public class MainActivity extends AppCompatActivity {
         if (id == R.id.action_settings) {
             return true;
         }
-
         return super.onOptionsItemSelected(item);
+    }
+
+    private String getAddress(double lat, double lon) {
+        Geocoder geocoder= new Geocoder(this, Locale.ENGLISH);
+        try {
+            List<Address> addresses = geocoder.getFromLocation(lat, lon, 1);
+            if(addresses != null) {
+                Address fetchedAddress = addresses.get(0);
+                StringBuilder strAddress = new StringBuilder();
+                for(int i=0; i<fetchedAddress.getMaxAddressLineIndex(); i++) {
+                    strAddress.append(fetchedAddress.getAddressLine(i)).append("\n");
+                }
+                return strAddress.toString();
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 
     private void sendSMS(String phoneNo, String message) {
@@ -117,14 +170,13 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void addDrawerItems() {
-        final String[] osArray = { "Home", "Users", "Active Trips", "Location Log", "Settings" };
         mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, osArray);
         mDrawerList.setAdapter(mAdapter);
 
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(MainActivity.this, osArray[(int)id], Toast.LENGTH_SHORT).show();
+                Toast.makeText(MainActivity.this, osArray[(int) id], Toast.LENGTH_SHORT).show();
             }
         });
     }
