@@ -76,7 +76,7 @@ public class MainActivity extends AppCompatActivity {
         callbackManager = CallbackManager.Factory.create();
         loginButton = (LoginButton) findViewById(R.id.login_button);
 
-        LoginManager.getInstance().registerCallback(callbackManager,
+        /*LoginManager.getInstance().registerCallback(callbackManager,
                 new FacebookCallback<LoginResult>() {
                     @Override
                     public void onSuccess(LoginResult loginResult) {
@@ -93,7 +93,9 @@ public class MainActivity extends AppCompatActivity {
                     public void onError(FacebookException exception) {
                         // App code
                     }
-                });
+                });*/
+
+        enterApp();
     }
 
     private void enterApp() {
@@ -216,7 +218,15 @@ public class MainActivity extends AppCompatActivity {
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(MainActivity.this, osArray[(int) id], Toast.LENGTH_SHORT).show();
+                String value = osArray[(int) id];
+                if (value == "Settings"){
+                    Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                    mDrawerLayout.closeDrawers();
+                    startActivity(intent);
+                }
+                else{
+                    Toast.makeText(MainActivity.this, osArray[(int) id], Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
