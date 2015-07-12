@@ -6,6 +6,7 @@ import android.app.FragmentTransaction;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
 import android.location.Address;
 import android.location.Geocoder;
@@ -16,6 +17,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.SmsManager;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -26,6 +28,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.amazonaws.mobileconnectors.cognito.exceptions.DataStorageException;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
@@ -45,9 +48,14 @@ import com.facebook.FacebookSdk;
 
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
+import com.amazonaws.auth.CognitoCachingCredentialsProvider;
+import com.amazonaws.mobileconnectors.cognito.*;
+import com.amazonaws.regions.Regions;
 
 public class MainActivity extends AppCompatActivity {
     public boolean text = true;
@@ -96,6 +104,36 @@ public class MainActivity extends AppCompatActivity {
                 });*/
 
         enterApp();
+
+        CognitoCachingCredentialsProvider credentialsProvider = new CognitoCachingCredentialsProvider(
+                this,
+                "794645355884",
+                "us-east-1:43be67f3-ad12-484e-bd12-6a7494084e02",
+                "arn:aws:iam::794645355884:role/Cognito_whereyouappUnauth_Role",
+                "arn:aws:iam::794645355884:role/Cognito_whereyouappAuth_Role",
+                Regions.US_EAST_1
+        );
+
+        CognitoSyncManager syncClient = new CognitoSyncManager(
+                this,
+                Regions.US_EAST_1,
+                credentialsProvider);
+
+        Dataset dataset = syncClient.openOrCreateDataset("Christine");
+        dataset.put("friend1", "Ameesha");
+        dataset.put("friend2", "Komal");
+        dataset.put("friend3", "Chris");
+
+        dataset.synchronize(new DefaultSyncCallback() {
+            @Override
+            public void onSuccess(Dataset dataset, final List<Record> newRecords) {
+                Log.i("Sync", "Dataset Synchronized!");
+            }
+            @Override
+            public void onFailure(final DataStorageException dse) {
+                Log.e("Sync", "Error onSyncro: " + dse.getCause().getMessage());
+            }
+        });
     }
 
     private void enterApp() {
@@ -103,7 +141,6 @@ public class MainActivity extends AppCompatActivity {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
         setSupportActionBar(toolbar);
-
 
         mDrawerList = (ListView)findViewById(R.id.navList);
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
@@ -115,7 +152,6 @@ public class MainActivity extends AppCompatActivity {
         final double testLong = -80.542216;
         final LatLng home = new LatLng(43.477794,-80.537274);
         final LatLng work = new LatLng(43.473929,-80.546237);
-
 
         LocationTracker.LocationUpdateListener listener = new LocationTracker.LocationUpdateListener() {
             @Override
