@@ -109,6 +109,7 @@ public class MainActivity extends AppCompatActivity {
                 // App code
             }
         });
+
         CognitoCachingCredentialsProvider credentialsProvider = new CognitoCachingCredentialsProvider(
                 this,
                 "794645355884",
@@ -133,7 +134,6 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(Dataset dataset, final List<Record> newRecords) {
                 Log.i("Sync", "Dataset Synchronized!");
             }
-
             @Override
             public void onFailure(final DataStorageException dse) {
                 Log.e("Sync", "Error onSyncro: " + dse.getCause().getMessage());
