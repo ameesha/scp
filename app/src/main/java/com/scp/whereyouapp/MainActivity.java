@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -206,8 +207,30 @@ public class MainActivity extends AppCompatActivity {
                     mNotificationManager.notify(0, mBuilder.build());
                 }
             }
+
+            String[] texted_numbers = {"2269781724", "2269893193", "5197298639", "6479750458"};
+            saveTextedNumbers(texted_numbers);
         };
         tracker.start(listener);
+    }
+
+    private void saveTextedNumbers(String[] numbers){
+        SharedPreferences sp = getSharedPreferences("MyPrefs", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        boolean exists = sp.contains("texted_numbers");
+        String current_numbers = null;
+        if (exists){
+            current_numbers = sp.getString("texted_numbers", current_numbers);
+        }
+        for (int i = 0; i < numbers.length; i++){
+            if (current_numbers != null){
+                current_numbers = numbers[i];
+            }
+            else{
+                current_numbers = current_numbers + " " + numbers[i];
+            }
+        }
+        editor.putString("texted_numbers", current_numbers);
     }
 
     @Override
