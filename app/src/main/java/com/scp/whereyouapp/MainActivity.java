@@ -6,7 +6,11 @@ import android.app.FragmentTransaction;
 import android.app.IntentService;
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -16,6 +20,8 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.SmsManager;
+import android.util.Base64;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -25,7 +31,9 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import com.facebook.AccessToken;
+import com.facebook.AccessTokenTracker;
+import com.amazonaws.mobileconnectors.cognito.exceptions.DataStorageException;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
@@ -45,9 +53,17 @@ import com.facebook.FacebookSdk;
 
 
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
+import com.amazonaws.auth.CognitoCachingCredentialsProvider;
+import com.amazonaws.mobileconnectors.cognito.*;
+import com.amazonaws.regions.Regions;
 
 public class MainActivity extends AppCompatActivity {
     public boolean text = true;
@@ -63,7 +79,6 @@ public class MainActivity extends AppCompatActivity {
     private final String[] osArray = { "Home", "Users", "Trips", "Location Log", "Settings" };
 
     private CallbackManager callbackManager;
-    private  LoginButton loginButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -72,28 +87,66 @@ public class MainActivity extends AppCompatActivity {
         // Initialize the SDK before executing any other operations,
         // especially, if you're using Facebook UI elements.
         FacebookSdk.sdkInitialize(this.getApplicationContext());
-
+        setContentView(R.layout.facebook);
         callbackManager = CallbackManager.Factory.create();
-        loginButton = (LoginButton) findViewById(R.id.login_button);
+        LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                Log.e("SUCCESS!", "SUCCESS!");
+                // App code
+                enterApp();
+            }
 
-        LoginManager.getInstance().registerCallback(callbackManager,
-                new FacebookCallback<LoginResult>() {
-                    @Override
-                    public void onSuccess(LoginResult loginResult) {
-                        // App code
-                        enterApp();
-                    }
+            @Override
+            public void onCancel() {
+                Log.e("Canceled", "canc");
+                // App code
+            }
 
-                    @Override
-                    public void onCancel() {
-                        // App code
-                    }
+            @Override
+            public void onError(FacebookException exception) {
+                Log.e("ERROR", exception.getMessage());
+                // App code
+            }
+        });
+        CognitoCachingCredentialsProvider credentialsProvider = new CognitoCachingCredentialsProvider(
+                this,
+                "794645355884",
+                "us-east-1:43be67f3-ad12-484e-bd12-6a7494084e02",
+                "arn:aws:iam::794645355884:role/Cognito_whereyouappUnauth_Role",
+                "arn:aws:iam::794645355884:role/Cognito_whereyouappAuth_Role",
+                Regions.US_EAST_1
+        );
 
-                    @Override
-                    public void onError(FacebookException exception) {
-                        // App code
-                    }
-                });
+        CognitoSyncManager syncClient = new CognitoSyncManager(
+                this,
+                Regions.US_EAST_1,
+                credentialsProvider);
+
+        Dataset dataset = syncClient.openOrCreateDataset("Christine");
+        dataset.put("friend1", "Ameesha");
+        dataset.put("friend2", "Komal");
+        dataset.put("friend3", "Chris");
+
+        dataset.synchronize(new DefaultSyncCallback() {
+            @Override
+            public void onSuccess(Dataset dataset, final List<Record> newRecords) {
+                Log.i("Sync", "Dataset Synchronized!");
+            }
+
+            @Override
+            public void onFailure(final DataStorageException dse) {
+                Log.e("Sync", "Error onSyncro: " + dse.getCause().getMessage());
+            }
+        });
+
+        LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("public_profile", "user_friends"));
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
     private void enterApp() {
@@ -101,7 +154,6 @@ public class MainActivity extends AppCompatActivity {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
         setSupportActionBar(toolbar);
-
 
         mDrawerList = (ListView)findViewById(R.id.navList);
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
@@ -113,7 +165,6 @@ public class MainActivity extends AppCompatActivity {
         final double testLong = -80.542216;
         final LatLng home = new LatLng(43.477794,-80.537274);
         final LatLng work = new LatLng(43.473929,-80.546237);
-
 
         LocationTracker.LocationUpdateListener listener = new LocationTracker.LocationUpdateListener() {
             @Override
@@ -216,7 +267,15 @@ public class MainActivity extends AppCompatActivity {
         mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                Toast.makeText(MainActivity.this, osArray[(int) id], Toast.LENGTH_SHORT).show();
+                String value = osArray[(int) id];
+                if (value == "Settings"){
+                    Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                    mDrawerLayout.closeDrawers();
+                    startActivity(intent);
+                }
+                else{
+                    Toast.makeText(MainActivity.this, osArray[(int) id], Toast.LENGTH_SHORT).show();
+                }
             }
         });
     }
