@@ -34,13 +34,16 @@ import android.widget.TextView;
 import android.widget.Toast;
 import com.facebook.AccessToken;
 import com.facebook.AccessTokenTracker;
-import com.amazonaws.mobileconnectors.cognito.exceptions.DataStorageException;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
 import com.facebook.login.widget.LoginButton;
+import com.firebase.client.DataSnapshot;
+import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.MapFragment;
@@ -64,10 +67,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import com.amazonaws.auth.CognitoCachingCredentialsProvider;
-import com.amazonaws.mobileconnectors.cognito.*;
-import com.amazonaws.regions.Regions;
-
 public class MainActivity extends AppCompatActivity {
     public boolean text = true;
     public Context context =  this;
@@ -86,6 +85,18 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Firebase.setAndroidContext(this);
+        Firebase myFirebaseRef = new Firebase("https://whereyouapp.firebaseio.com/");
+        myFirebaseRef.child("message").addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                System.out.println(snapshot.getValue());  //prints "Do you have data? You'll love Firebase."
+            }
+            @Override public void onCancelled(FirebaseError error) { }
+        });
+
+        myFirebaseRef.child("message").setValue("Do you have data? You'll love Firebase.");
+
 
         // Initialize the SDK before executing any other operations,
         // especially, if you're using Facebook UI elements.
@@ -112,37 +123,6 @@ public class MainActivity extends AppCompatActivity {
                 // App code
             }
         });
-
-  /*      CognitoCachingCredentialsProvider credentialsProvider = new CognitoCachingCredentialsProvider(
-                this,
-                "794645355884",
-                "us-east-1:43be67f3-ad12-484e-bd12-6a7494084e02",
-                "arn:aws:iam::794645355884:role/Cognito_whereyouappUnauth_Role",
-                "arn:aws:iam::794645355884:role/Cognito_whereyouappAuth_Role",
-                Regions.US_EAST_1
-        );
-
-        CognitoSyncManager syncClient = new CognitoSyncManager(
-                this,
-                Regions.US_EAST_1,
-                credentialsProvider);
-
-        Dataset dataset = syncClient.openOrCreateDataset("Christine");
-        dataset.put("friend1", "Ameesha");
-        dataset.put("friend2", "Komal");
-        dataset.put("friend3", "Chris");
-
-        dataset.synchronize(new DefaultSyncCallback() {
-            @Override
-            public void onSuccess(Dataset dataset, final List<Record> newRecords) {
-                Log.i("Sync", "Dataset Synchronized!");
-            }
-
-            @Override
-            public void onFailure(final DataStorageException dse) {
-                Log.e("Sync", "Error onSyncro: " + dse.getCause().getMessage());
-            }
-        });*/
 
         LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("public_profile", "user_friends"));
     }
