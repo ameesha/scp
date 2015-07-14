@@ -113,7 +113,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        CognitoCachingCredentialsProvider credentialsProvider = new CognitoCachingCredentialsProvider(
+  /*      CognitoCachingCredentialsProvider credentialsProvider = new CognitoCachingCredentialsProvider(
                 this,
                 "794645355884",
                 "us-east-1:43be67f3-ad12-484e-bd12-6a7494084e02",
@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
             public void onFailure(final DataStorageException dse) {
                 Log.e("Sync", "Error onSyncro: " + dse.getCause().getMessage());
             }
-        });
+        });*/
 
         LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("public_profile", "user_friends"));
     }
