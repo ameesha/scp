@@ -11,6 +11,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -56,6 +57,8 @@ import java.io.IOException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -134,6 +137,7 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(Dataset dataset, final List<Record> newRecords) {
                 Log.i("Sync", "Dataset Synchronized!");
             }
+
             @Override
             public void onFailure(final DataStorageException dse) {
                 Log.e("Sync", "Error onSyncro: " + dse.getCause().getMessage());
@@ -191,10 +195,14 @@ public class MainActivity extends AppCompatActivity {
                 if(Math.abs(cur_loc.latitude - testLat) < 0.001 && Math.abs(cur_loc.longitude - testLong) < 0.001 && text) {
                     text = false;
                     SmsManager smsManager = SmsManager.getDefault();
-                    smsManager.sendTextMessage("2269781724", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
+                    String[] texted_numbers = {"2269781724", "2269893193", "5197298639", "6479750458"};
+                    for (int i = 0; i < texted_numbers.length; i++){
+                        smsManager.sendTextMessage(texted_numbers[i], null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
+                    }
+                    /*smsManager.sendTextMessage("2269781724", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
                     smsManager.sendTextMessage("2269893193", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
                     smsManager.sendTextMessage("5197298639", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
-                    smsManager.sendTextMessage("6479750458", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
+                    smsManager.sendTextMessage("6479750458", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);*/
 
                     NotificationCompat.Builder mBuilder =
                             new NotificationCompat.Builder(context)
@@ -204,10 +212,33 @@ public class MainActivity extends AppCompatActivity {
                     NotificationManager mNotificationManager =
                             (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                     mNotificationManager.notify(0, mBuilder.build());
+
+                    saveTextedNumbers(texted_numbers);
                 }
             }
         };
         tracker.start(listener);
+    }
+
+    private void saveTextedNumbers(String[] numbers){
+        SharedPreferences sp = getSharedPreferences("notificationLog", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        boolean exists = sp.contains("texted_numbers");
+        String current_numbers = null;
+        if (exists){
+            current_numbers = sp.getString("texted_numbers", current_numbers);
+        }
+        String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
+        for (int i = 0; i < numbers.length; i++){
+            if (current_numbers == null){
+                current_numbers = "Number: " + numbers[i] + " " + currentDateTimeString;
+            }
+            else{
+                current_numbers = current_numbers + " Number: "  + numbers[i] + " " + currentDateTimeString;
+            }
+        }
+        editor.putString("texted_numbers", current_numbers);
+        editor.commit();
     }
 
     @Override
@@ -270,6 +301,11 @@ public class MainActivity extends AppCompatActivity {
                 String value = osArray[(int) id];
                 if (value == "Settings"){
                     Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                    mDrawerLayout.closeDrawers();
+                    startActivity(intent);
+                }
+                else if (value == "Location Log"){
+                    Intent intent = new Intent(MainActivity.this, LocationLogActivity.class);
                     mDrawerLayout.closeDrawers();
                     startActivity(intent);
                 }
