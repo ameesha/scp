@@ -8,6 +8,10 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.ContextWrapper;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
+import android.content.pm.PackageManager;
+import android.content.pm.Signature;
+import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
 import android.location.Location;
@@ -17,6 +21,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.SmsManager;
+import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -27,7 +32,8 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-
+import com.facebook.AccessToken;
+import com.facebook.AccessTokenTracker;
 import com.amazonaws.mobileconnectors.cognito.exceptions.DataStorageException;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
@@ -48,6 +54,11 @@ import com.facebook.FacebookSdk;
 
 
 import java.io.IOException;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.util.Arrays;
+import java.text.DateFormat;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -71,7 +82,6 @@ public class MainActivity extends AppCompatActivity {
     private final String[] osArray = { "Home", "Users", "Trips", "Location Log", "Settings" };
 
     private CallbackManager callbackManager;
-    private  LoginButton loginButton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,32 +90,30 @@ public class MainActivity extends AppCompatActivity {
         // Initialize the SDK before executing any other operations,
         // especially, if you're using Facebook UI elements.
         FacebookSdk.sdkInitialize(this.getApplicationContext());
-
+        setContentView(R.layout.facebook);
         callbackManager = CallbackManager.Factory.create();
-        loginButton = (LoginButton) findViewById(R.id.login_button);
+        LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+            @Override
+            public void onSuccess(LoginResult loginResult) {
+                Log.e("SUCCESS!", "SUCCESS!");
+                // App code
+                enterApp();
+            }
 
-        /*LoginManager.getInstance().registerCallback(callbackManager,
-                new FacebookCallback<LoginResult>() {
-                    @Override
-                    public void onSuccess(LoginResult loginResult) {
-                        // App code
-                        enterApp();
-                    }
+            @Override
+            public void onCancel() {
+                Log.e("Canceled", "canc");
+                // App code
+            }
 
-                    @Override
-                    public void onCancel() {
-                        // App code
-                    }
+            @Override
+            public void onError(FacebookException exception) {
+                Log.e("ERROR", exception.getMessage());
+                // App code
+            }
+        });
 
-                    @Override
-                    public void onError(FacebookException exception) {
-                        // App code
-                    }
-                });*/
-
-        enterApp();
-
-        CognitoCachingCredentialsProvider credentialsProvider = new CognitoCachingCredentialsProvider(
+  /*      CognitoCachingCredentialsProvider credentialsProvider = new CognitoCachingCredentialsProvider(
                 this,
                 "794645355884",
                 "us-east-1:43be67f3-ad12-484e-bd12-6a7494084e02",
@@ -129,11 +137,20 @@ public class MainActivity extends AppCompatActivity {
             public void onSuccess(Dataset dataset, final List<Record> newRecords) {
                 Log.i("Sync", "Dataset Synchronized!");
             }
+
             @Override
             public void onFailure(final DataStorageException dse) {
                 Log.e("Sync", "Error onSyncro: " + dse.getCause().getMessage());
             }
-        });
+        });*/
+
+        LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("public_profile", "user_friends"));
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
     private void enterApp() {
@@ -178,10 +195,14 @@ public class MainActivity extends AppCompatActivity {
                 if(Math.abs(cur_loc.latitude - testLat) < 0.001 && Math.abs(cur_loc.longitude - testLong) < 0.001 && text) {
                     text = false;
                     SmsManager smsManager = SmsManager.getDefault();
-                    smsManager.sendTextMessage("2269781724", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
+                    String[] texted_numbers = {"2269781724", "2269893193", "5197298639", "6479750458"};
+                    for (int i = 0; i < texted_numbers.length; i++){
+                        smsManager.sendTextMessage(texted_numbers[i], null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
+                    }
+                    /*smsManager.sendTextMessage("2269781724", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
                     smsManager.sendTextMessage("2269893193", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
                     smsManager.sendTextMessage("5197298639", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
-                    smsManager.sendTextMessage("6479750458", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
+                    smsManager.sendTextMessage("6479750458", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);*/
 
                     NotificationCompat.Builder mBuilder =
                             new NotificationCompat.Builder(context)
@@ -191,10 +212,33 @@ public class MainActivity extends AppCompatActivity {
                     NotificationManager mNotificationManager =
                             (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
                     mNotificationManager.notify(0, mBuilder.build());
+
+                    saveTextedNumbers(texted_numbers);
                 }
             }
         };
         tracker.start(listener);
+    }
+
+    private void saveTextedNumbers(String[] numbers){
+        SharedPreferences sp = getSharedPreferences("notificationLog", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        boolean exists = sp.contains("texted_numbers");
+        String current_numbers = null;
+        if (exists){
+            current_numbers = sp.getString("texted_numbers", current_numbers);
+        }
+        String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
+        for (int i = 0; i < numbers.length; i++){
+            if (current_numbers == null){
+                current_numbers = "Number: " + numbers[i] + " " + currentDateTimeString;
+            }
+            else{
+                current_numbers = current_numbers + " Number: "  + numbers[i] + " " + currentDateTimeString;
+            }
+        }
+        editor.putString("texted_numbers", current_numbers);
+        editor.commit();
     }
 
     @Override
@@ -257,6 +301,11 @@ public class MainActivity extends AppCompatActivity {
                 String value = osArray[(int) id];
                 if (value == "Settings"){
                     Intent intent = new Intent(MainActivity.this, SettingsActivity.class);
+                    mDrawerLayout.closeDrawers();
+                    startActivity(intent);
+                }
+                else if (value == "Location Log"){
+                    Intent intent = new Intent(MainActivity.this, LocationLogActivity.class);
                     mDrawerLayout.closeDrawers();
                     startActivity(intent);
                 }
