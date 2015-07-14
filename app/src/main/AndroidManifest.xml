@@ -60,6 +60,10 @@
             android:name=".SettingsActivity"
             android:label="@string/title_activity_settings" >
         </activity>
+        <activity
+            android:name=".LocationLogActivity"
+            android:label="@string/title_activity_location_log" >
+        </activity>
     </application>
 
 </manifest>
