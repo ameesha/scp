@@ -2,28 +2,40 @@ package com.scp.whereyouapp;
 
 import android.app.ListActivity;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 
 
 public class LocationLogActivity extends ActionBarActivity {
     private int[] colors = new int[] { 0x30FF0000, 0x300000FF };
+    private DrawerLayout mDrawerLayout;
+    private ListView mDrawerList;
+    private ArrayAdapter<String> mAdapter;
+    private final String[] osArray = { "Home", "Users", "Trips", "Location Log", "Settings" };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_location_log);
         getWindow().getDecorView().setBackgroundColor(Color.LTGRAY);
+
+        mDrawerList = (ListView)findViewById(R.id.navList);
+        mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
+        addDrawerItems();
 
         ArrayList<String> numList = getListedLog();
         //String[] examples = {"a", "Dsadsa" ,"DAfs", "trgfdgfhgfhfgjsdf23f43g54g45b45454g5"};
@@ -90,5 +102,31 @@ public class LocationLogActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void addDrawerItems() {
+        mAdapter = new ArrayAdapter<String>(this, android.R.layout.simple_list_item_1, osArray);
+        mDrawerList.setAdapter(mAdapter);
+
+        mDrawerList.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                String value = osArray[(int) id];
+                if (value == "Settings"){
+                    Intent intent = new Intent(LocationLogActivity.this, SettingsActivity.class);
+                    mDrawerLayout.closeDrawers();
+                    startActivity(intent);
+                }
+                else if (value == "Home"){
+                    Intent intent = new Intent(LocationLogActivity.this, MainActivity.class);
+                    //Context packageContext
+                    mDrawerLayout.closeDrawers();
+                    startActivity(intent);
+                }
+                else{
+                    Toast.makeText(LocationLogActivity.this, osArray[(int) id], Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
     }
 }
