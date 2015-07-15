@@ -37,7 +37,6 @@ import com.google.android.gms.maps.GoogleMap;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.Marker;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 import com.facebook.FacebookSdk;
@@ -59,12 +58,9 @@ public class MainActivity extends AppCompatActivity {
     private ArrayAdapter<String> mAdapter;
     private DrawerLayout mDrawerLayout;
     private GoogleMap map;
-    private Marker cur_loc_marker;
     private TextView current_location;
-    private int selectedPosition;
     private final String[] osArray = { "Home", "Users", "Trips", "Location Log", "Settings" };
     private Firebase firebaseRef;
-    private String fb_uid;
 
     private CallbackManager callbackManager;
 
@@ -125,16 +121,17 @@ public class MainActivity extends AppCompatActivity {
                 firebaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
-                        if(!snapshot.child("users").hasChild(authData.getUid())) {
-                            //if new user, pen popup window with text field
-                            //allowing user to enter a username
+                        if (!snapshot.child("users").hasChild(authData.getUid()) || !snapshot.child("users").child(authData.getUid()).hasChild("username")) {
+                            Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
+                            loginIntent.putExtra("uid", authData.getUid());
+                            MainActivity.this.startActivity(loginIntent);
                         }
                     }
                     @Override
                     public void onCancelled(FirebaseError firebaseError) {
                     }
                 });
-                Map<String, String> map = new HashMap<String, String>();
+                Map<String, Object> map = new HashMap<String, Object>();
                 map.put("provider", authData.getProvider());
                 if (authData.getProviderData().containsKey("id")) {
                     map.put("provider_id", authData.getProviderData().get("id").toString());
@@ -148,8 +145,9 @@ public class MainActivity extends AppCompatActivity {
                 if (authData.getProviderData().containsKey("profileImageURL")) {
                     map.put("profileImageURL", authData.getProviderData().get("profileImageURL").toString());
                 }
-                firebaseRef.child("users").child(authData.getUid()).setValue(map);
+                firebaseRef.child("users").child(authData.getUid()).updateChildren(map);
             }
+
             @Override
             public void onAuthenticationError(FirebaseError error) {
                 Log.e("Firebase auth", error.getMessage());

@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout
+    xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="fill_parent" android:layout_height="fill_parent" android:orientation="vertical" >
+    <TextView android:id="@+id/loginLabel"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Choose a username"
+        android:layout_marginLeft="19dp"
+        android:layout_marginStart="19dp"
+        android:layout_marginTop="43dp"
+        android:layout_below="@+id/login_button"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
+
+    <TextView android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Please enter a username"
+        android:textColor="#F00"
+        android:id="@+id/loginWarning"
+        android:visibility="invisible"
+        android:layout_below="@+id/username"
+        android:layout_alignRight="@+id/textView"
+        android:layout_alignEnd="@+id/textView" />
+
+    <EditText
+        android:id="@+id/username"
+        android:layout_width="330dp"
+        android:layout_height="wrap_content"
+        android:inputType="text"
+        android:hint="@string/username"
+        android:imeOptions="actionSend"
+        android:layout_marginTop="16dp"
+        android:layout_below="@+id/loginLabel"
+        android:layout_alignLeft="@+id/loginLabel"
+        android:layout_alignStart="@+id/loginLabel" />
+
+    <TextView android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/login"
+        android:id="@+id/textView"
+        android:layout_alignParentTop="true"
+        android:layout_alignLeft="@+id/loginLabel"
+        android:layout_alignStart="@+id/loginLabel"
+        android:layout_marginTop="42dp" />
+
+        <com.facebook.login.widget.LoginButton
+            android:id="@+id/login_button"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_below="@+id/textView"
+            android:layout_alignLeft="@+id/loginLabel" />
+
+    <Button
+        android:id="@+id/loginBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Login"
+        android:onClick="onLoginClick"
+        android:layout_centerVertical="true"
+        android:layout_alignRight="@+id/username"
+        android:layout_alignEnd="@+id/username" />
+</RelativeLayout>
+
