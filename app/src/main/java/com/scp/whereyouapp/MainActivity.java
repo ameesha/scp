@@ -1,16 +1,8 @@
 package com.scp.whereyouapp;
 
-import android.app.Fragment;
-import android.app.FragmentManager;
-import android.app.FragmentTransaction;
-import android.app.IntentService;
 import android.app.NotificationManager;
 import android.content.Context;
-import android.content.ContextWrapper;
 import android.content.Intent;
-import android.content.pm.PackageInfo;
-import android.content.pm.PackageManager;
-import android.content.pm.Signature;
 import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
@@ -21,32 +13,27 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.SmsManager;
-import android.util.Base64;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
-import android.webkit.WebViewFragment;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import com.facebook.AccessToken;
-import com.facebook.AccessTokenTracker;
 import com.facebook.CallbackManager;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
 import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
-import com.facebook.login.widget.LoginButton;
+import com.firebase.client.AuthData;
 import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
 import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
 import com.google.android.gms.maps.CameraUpdateFactory;
 import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.MapFragment;
 import com.google.android.gms.maps.SupportMapFragment;
 import com.google.android.gms.maps.model.BitmapDescriptorFactory;
 import com.google.android.gms.maps.model.LatLng;
@@ -55,10 +42,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 
 import com.facebook.FacebookSdk;
 
-
 import java.io.IOException;
-import java.security.MessageDigest;
-import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
 import java.text.DateFormat;
 import java.util.Date;
@@ -79,6 +63,8 @@ public class MainActivity extends AppCompatActivity {
     private TextView current_location;
     private int selectedPosition;
     private final String[] osArray = { "Home", "Users", "Trips", "Location Log", "Settings" };
+    private Firebase firebaseRef;
+    private String fb_uid;
 
     private CallbackManager callbackManager;
 
@@ -86,17 +72,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         Firebase.setAndroidContext(this);
-        Firebase myFirebaseRef = new Firebase("https://whereyouapp.firebaseio.com/");
-        myFirebaseRef.child("message").addValueEventListener(new ValueEventListener() {
-            @Override
-            public void onDataChange(DataSnapshot snapshot) {
-                System.out.println(snapshot.getValue());  //prints "Do you have data? You'll love Firebase."
-            }
-            @Override public void onCancelled(FirebaseError error) { }
-        });
-
-        myFirebaseRef.child("message").setValue("Do you have data? You'll love Firebase.");
-
+        firebaseRef = new Firebase("https://whereyouapp.firebaseio.com/");
 
         // Initialize the SDK before executing any other operations,
         // especially, if you're using Facebook UI elements.
@@ -107,8 +83,8 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onSuccess(LoginResult loginResult) {
                 Log.e("SUCCESS!", "SUCCESS!");
-                // App code
-                enterApp();
+                //check if this user already exists in Firebase
+                enterApp(loginResult);
             }
 
             @Override
@@ -133,7 +109,7 @@ public class MainActivity extends AppCompatActivity {
         callbackManager.onActivityResult(requestCode, resultCode, data);
     }
 
-    private void enterApp() {
+    private void enterApp(LoginResult loginResult) {
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
@@ -142,6 +118,43 @@ public class MainActivity extends AppCompatActivity {
         mDrawerList = (ListView)findViewById(R.id.navList);
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         addDrawerItems();
+
+        firebaseRef.authWithOAuthToken("facebook", loginResult.getAccessToken().getToken(), new Firebase.AuthResultHandler() {
+            @Override
+            public void onAuthenticated(final AuthData authData) {
+                firebaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(DataSnapshot snapshot) {
+                        if(!snapshot.child("users").hasChild(authData.getUid())) {
+                            //if new user, pen popup window with text field
+                            //allowing user to enter a username
+                        }
+                    }
+                    @Override
+                    public void onCancelled(FirebaseError firebaseError) {
+                    }
+                });
+                Map<String, String> map = new HashMap<String, String>();
+                map.put("provider", authData.getProvider());
+                if (authData.getProviderData().containsKey("id")) {
+                    map.put("provider_id", authData.getProviderData().get("id").toString());
+                }
+                if (authData.getProviderData().containsKey("displayName")) {
+                    map.put("name", authData.getProviderData().get("displayName").toString());
+                }
+                if (authData.getProviderData().containsKey("email")) {
+                    map.put("email", authData.getProviderData().get("email").toString());
+                }
+                if (authData.getProviderData().containsKey("profileImageURL")) {
+                    map.put("profileImageURL", authData.getProviderData().get("profileImageURL").toString());
+                }
+                firebaseRef.child("users").child(authData.getUid()).setValue(map);
+            }
+            @Override
+            public void onAuthenticationError(FirebaseError error) {
+                Log.e("Firebase auth", error.getMessage());
+            }
+        });
 
         current_location = (TextView) findViewById(R.id.current_location);
         final LocationTracker tracker = new FallbackLocationTracker(this,ProviderLocationTracker.ProviderType.GPS);
