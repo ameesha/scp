@@ -1,6 +1,8 @@
 package com.scp.whereyouapp;
 
 import android.app.Activity;
+import android.content.Context;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
@@ -45,6 +47,12 @@ public class LoginActivity extends Activity {
         else {
             loginWarning.setVisibility(View.INVISIBLE);
             map.put("username", username.getText().toString().trim());
+            SharedPreferences sp = getSharedPreferences("settings", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sp.edit();
+            editor.putString("username", username.getText().toString().trim());
+            editor.putBoolean("allow_friends_to_ping", true);
+            editor.putBoolean("receive_push_notifications", true);
+            editor.commit();
             firebaseRef.child("users").child(uid).updateChildren(map);
             finish();
         }

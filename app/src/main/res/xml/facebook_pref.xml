@@ -1,0 +1,14 @@
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <Preference
+        android:key="log_out_fb_button"
+        android:title="@string/log_out_fb"
+        android:singleLine="true"
+        android:maxLines="1" />
+    <Preference
+        android:key="share_on_fb_button"
+        android:title="@string/share_app_on_fb"
+        android:singleLine="true"
+        android:maxLines="1" />
+
+</PreferenceScreen>

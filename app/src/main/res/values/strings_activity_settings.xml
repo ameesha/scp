@@ -1,9 +1,21 @@
 <resources>
     <string name="title_activity_settings">Settings</string>
+
+    <!-- General -->
+    <string name="pref_title_display_name">Display name</string>
     <string name="allow_friends_to_ping">Allow friends to ping your location</string>
-    <string name="push_notification_when_arrived">Receive push notifications after texting contact(s)</string>
-    <string name="push_notification_when_location_pinged">Receive push notifications when friends ping your location</string>
+    <string name="allow_friends_to_ping_summary">Allow friends to constantly ping for your location while running the app. You can add/remove these permissions for individual friends under the Trips setting. No one has permissions by default.</string>
+
+    <!-- Notifications -->
+    <string name="pref_header_notifications">Notifications</string>
+    <string name="push_notification">Receive Push Notifications</string>
+    <string name="push_notification_summary">Receive push notifications when friends ping your location or after your text your friends once a trip has ended.</string>
+
+    <!-- Facebook -->
+    <string name="pref_header_facebook">Facebook</string>
+    <string name="log_out_fb">Log out of Facebook</string>
     <string name="share_app_on_fb">Share this app with love on Facebook!</string>
+
     <!-- Strings related to Settings -->
 
     <!-- Example General settings -->
@@ -14,15 +26,8 @@
         based on your message history
     </string>
 
-    <string name="pref_title_display_name">Display name</string>
-    <string name="pref_default_display_name">John Smith</string>
 
-    <string name="pref_title_add_friends_to_messages">Add friends to messages</string>
-    <string-array name="pref_example_list_titles">
-        <item>Always</item>
-        <item>When possible</item>
-        <item>Never</item>
-    </string-array>
+
     <string-array name="pref_example_list_values">
         <item>1</item>
         <item>0</item>
@@ -53,7 +58,7 @@
     <string name="pref_title_system_sync_settings">System sync settings</string>
 
     <!-- Example settings for Notifications -->
-    <string name="pref_header_notifications">Notifications</string>
+
 
     <string name="pref_title_new_message_notifications">New message notifications</string>
 
