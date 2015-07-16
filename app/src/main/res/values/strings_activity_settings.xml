@@ -13,7 +13,7 @@
 
     <!-- Facebook -->
     <string name="pref_header_facebook">Facebook</string>
-    <string name="log_out_fb">Log out of Facebook</string>
+    <string name="log_out_fb">Log out of Facebook and exit the App</string>
     <string name="share_app_on_fb">Share this app with love on Facebook!</string>
 
     <!-- Strings related to Settings -->

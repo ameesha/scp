@@ -67,6 +67,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if( getIntent().getBooleanExtra("Exit me", false)){
+            finish();
+            return; // add this to prevent from doing unnecessary stuffs
+        }
         Firebase.setAndroidContext(this);
         firebaseRef = new Firebase("https://whereyouapp.firebaseio.com/");
 
