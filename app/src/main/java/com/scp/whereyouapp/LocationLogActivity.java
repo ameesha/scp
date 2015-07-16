@@ -25,7 +25,7 @@ public class LocationLogActivity extends ActionBarActivity {
     private DrawerLayout mDrawerLayout;
     private ListView mDrawerList;
     private ArrayAdapter<String> mAdapter;
-    private final String[] osArray = { "Home", "Users", "Trips", "Location Log", "Settings" };
+    private final String[] osArray = { "Home", "Friends", "Trips", "Location Log", "Settings" };
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -119,6 +119,12 @@ public class LocationLogActivity extends ActionBarActivity {
                 }
                 else if (value == "Home"){
                     Intent intent = new Intent(LocationLogActivity.this, MainActivity.class);
+                    //Context packageContext
+                    mDrawerLayout.closeDrawers();
+                    startActivity(intent);
+                }
+                else if (value == "Friends"){
+                    Intent intent = new Intent(LocationLogActivity.this, FriendsActivity.class);
                     //Context packageContext
                     mDrawerLayout.closeDrawers();
                     startActivity(intent);
