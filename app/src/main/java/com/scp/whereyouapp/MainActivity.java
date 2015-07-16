@@ -69,7 +69,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
     private DrawerLayout mDrawerLayout;
     private GoogleMap map;
     private TextView current_location;
-    private final String[] osArray = { "Home", "Users", "Trips", "Location Log", "Settings" };
+    private final String[] osArray = { "Home", "Friends", "Trips", "Location Log", "Settings" };
     private Firebase firebaseRef;
 
     private CallbackManager callbackManager;
@@ -80,6 +80,10 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        if( getIntent().getBooleanExtra("Exit me", false)){
+            finish();
+            return; // add this to prevent from doing unnecessary stuffs
+        }
         Firebase.setAndroidContext(this);
         firebaseRef = new Firebase("https://whereyouapp.firebaseio.com/");
 
@@ -131,13 +135,18 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
         firebaseRef.authWithOAuthToken("facebook", loginResult.getAccessToken().getToken(), new Firebase.AuthResultHandler() {
             @Override
             public void onAuthenticated(final AuthData authData) {
+                Globals.setUid(authData.getUid());
+
                 firebaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
                     @Override
                     public void onDataChange(DataSnapshot snapshot) {
-                        if (!snapshot.child("users").hasChild(authData.getUid()) || !snapshot.child("users").child(authData.getUid()).hasChild("username")) {
+                        //new user (no username for this fb login)
+                        if (!snapshot.child("users").hasChild(Globals.getUid()) || !snapshot.child("users").child(Globals.getUid()).hasChild("username")) {
                             Intent loginIntent = new Intent(MainActivity.this, LoginActivity.class);
-                            loginIntent.putExtra("uid", authData.getUid());
                             MainActivity.this.startActivity(loginIntent);
+                        }
+                        else {
+                            Globals.setUsername(snapshot.child("users").child(Globals.getUid()).child("username").getValue().toString());
                         }
                     }
                     @Override
@@ -158,7 +167,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
                 if (authData.getProviderData().containsKey("profileImageURL")) {
                     map.put("profileImageURL", authData.getProviderData().get("profileImageURL").toString());
                 }
-                firebaseRef.child("users").child(authData.getUid()).updateChildren(map);
+                firebaseRef.child("users").child(Globals.getUid()).updateChildren(map);
             }
 
             @Override
@@ -189,7 +198,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
                 if((addr = getAddress(cur_loc.latitude, cur_loc.longitude)) != "") {
                     current_location.setText("Current location: " + addr);
                 }
-
+                map.clear();
                 map.addMarker(new MarkerOptions().position(cur_loc).title("Current location").snippet(addr));
                 map.addMarker(new MarkerOptions().position(home).title("Home").snippet(getAddress(home.latitude, home.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
                 map.addMarker(new MarkerOptions().position(work).title("Work").snippet(getAddress(work.latitude, work.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
@@ -321,7 +330,13 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
                     Intent intent = new Intent(MainActivity.this, LocationLogActivity.class);
                     mDrawerLayout.closeDrawers();
                     startActivity(intent);
-                } else {
+                }
+                else if (value == "Friends"){
+                    Intent intent = new Intent(MainActivity.this, FriendsActivity.class);
+                    mDrawerLayout.closeDrawers();
+                    startActivity(intent);
+                }
+                else{
                     Toast.makeText(MainActivity.this, osArray[(int) id], Toast.LENGTH_SHORT).show();
                 }
             }
