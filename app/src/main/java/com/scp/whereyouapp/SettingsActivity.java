@@ -19,6 +19,9 @@ import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.text.TextUtils;
 
+import com.facebook.FacebookSdk;
+import com.facebook.login.LoginManager;
+
 
 import java.util.List;
 
@@ -90,6 +93,23 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
         header.setTitle(R.string.pref_header_facebook);
         getPreferenceScreen().addPreference(header);
         addPreferencesFromResource(R.xml.facebook_pref);
+        Preference log_out_button = (Preference) findPreference("log_out_fb_button");
+        log_out_button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference){
+                LoginManager.getInstance().logOut();
+                System.exit(0);
+                return true;
+            }
+        });
+
+        Preference share_button = (Preference) findPreference("share_on_fb_button");
+        share_button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference){
+                return true;
+            }
+        });
 
         SharedPreferences default_prefs = PreferenceManager.getDefaultSharedPreferences(this);
         default_prefs.registerOnSharedPreferenceChangeListener(this);
@@ -119,12 +139,6 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
             editor.commit();
             getPreferenceScreen().getSharedPreferences()
                     .registerOnSharedPreferenceChangeListener(this);
-        }
-        else if (key.equals("log_out_fb_button")){
-
-        }
-        else if (key.equals("share_on_fb_button")){
-
         }
     }
 
