@@ -181,7 +181,7 @@ public class MainActivity extends AppCompatActivity {
                 if((addr = getAddress(cur_loc.latitude, cur_loc.longitude)) != "") {
                     current_location.setText("Current location: " + addr);
                 }
-
+                map.clear();
                 map.addMarker(new MarkerOptions().position(cur_loc).title("Current location").snippet(addr));
                 map.addMarker(new MarkerOptions().position(home).title("Home").snippet(getAddress(home.latitude, home.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
                 map.addMarker(new MarkerOptions().position(work).title("Work").snippet(getAddress(work.latitude, work.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));

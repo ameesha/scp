@@ -85,4 +85,7 @@ public class LoginActivity extends Activity {
             finish();
         }
     }
+    @Override
+    public void onBackPressed() {
+    }
 }
