@@ -9,10 +9,6 @@
     android:gravity="bottom"
     android:padding="5dp" >
 
-    <TextView android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="@string/login" />
-
     <LinearLayout  android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -22,6 +18,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"
+            android:visibility="invisible"
             android:layout_marginTop="30dp"
             android:layout_marginBottom="30dp" />
     </LinearLayout>

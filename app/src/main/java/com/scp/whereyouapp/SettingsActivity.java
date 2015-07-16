@@ -3,6 +3,7 @@ package com.scp.whereyouapp;
 import android.annotation.TargetApi;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.Configuration;
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -18,6 +19,10 @@ import android.preference.PreferenceManager;
 import android.preference.RingtonePreference;
 import android.text.TextUtils;
 
+import com.facebook.FacebookSdk;
+import com.facebook.login.LoginManager;
+import com.facebook.AccessToken;
+
 
 import java.util.List;
 
@@ -32,7 +37,7 @@ import java.util.List;
  * href="http://developer.android.com/guide/topics/ui/settings.html">Settings
  * API Guide</a> for more information on developing a Settings UI.
  */
-public class SettingsActivity extends PreferenceActivity {
+public class SettingsActivity extends PreferenceActivity implements SharedPreferences.OnSharedPreferenceChangeListener {
     /**
      * Determines whether to always show the simplified settings UI, where
      * settings are presented in a single list. When false, settings are shown
@@ -40,7 +45,7 @@ public class SettingsActivity extends PreferenceActivity {
      * shown on tablets.
      */
     private static final boolean ALWAYS_SIMPLE_PREFS = false;
-
+    private SharedPreferences.OnSharedPreferenceChangeListener prefListener;
 
     @Override
     protected void onPostCreate(Bundle savedInstanceState) {
@@ -59,31 +64,110 @@ public class SettingsActivity extends PreferenceActivity {
             return;
         }
 
-        // In the simplified UI, fragments are not used at all and we instead
-        // use the older PreferenceActivity APIs.
+        // add general preferences
+        PreferenceCategory header = new PreferenceCategory(this);
+        addPreferencesFromResource(R.xml.general_pref);
 
-        // Add 'general' preferences.
-        addPreferencesFromResource(R.xml.pref_general);
+        SharedPreferences sp = getSharedPreferences("settings", Context.MODE_PRIVATE);
+        String username = "";
+        username = sp.getString("username", username);
+        Preference pref = (Preference) findPreference("display_username");
+        pref.setSummary(username);
+        Preference ping_pref = (Preference) findPreference("allow_to_ping_checkbox");
+        Boolean ping_allow = true;;
+        ping_allow = sp.getBoolean("allow_friends_to_ping", ping_allow);
+        ping_pref.setEnabled(ping_allow);
 
-        // Add 'notifications' preferences, and a corresponding header.
-        PreferenceCategory fakeHeader = new PreferenceCategory(this);
-        fakeHeader.setTitle(R.string.pref_header_notifications);
-        getPreferenceScreen().addPreference(fakeHeader);
-        addPreferencesFromResource(R.xml.pref_notification);
+        // add notification preferences
+        header = new PreferenceCategory(this);
+        header.setTitle(R.string.pref_header_notifications);
+        getPreferenceScreen().addPreference(header);
+        addPreferencesFromResource(R.xml.notifications_pref);
 
-        // Add 'data and sync' preferences, and a corresponding header.
-        fakeHeader = new PreferenceCategory(this);
-        fakeHeader.setTitle(R.string.pref_header_data_sync);
-        getPreferenceScreen().addPreference(fakeHeader);
-        addPreferencesFromResource(R.xml.pref_data_sync);
+        Preference notification_pref = (Preference) findPreference("texted_push_notifications");
+        Boolean notification_allow = true;;
+        notification_allow = sp.getBoolean("allow_friends_to_ping", notification_allow);
+        notification_pref.setEnabled(notification_allow);
 
-        // Bind the summaries of EditText/List/Dialog/Ringtone preferences to
-        // their values. When their values change, their summaries are updated
-        // to reflect the new value, per the Android Design guidelines.
-        bindPreferenceSummaryToValue(findPreference("example_text"));
-        bindPreferenceSummaryToValue(findPreference("example_list"));
-        bindPreferenceSummaryToValue(findPreference("notifications_new_message_ringtone"));
-        bindPreferenceSummaryToValue(findPreference("sync_frequency"));
+        // add facebook preferences
+        header = new PreferenceCategory(this);
+        header.setTitle(R.string.pref_header_facebook);
+        getPreferenceScreen().addPreference(header);
+        addPreferencesFromResource(R.xml.facebook_pref);
+        Preference log_out_button = (Preference) findPreference("log_out_fb_button");
+        log_out_button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference){
+                FacebookSdk.sdkInitialize(getApplicationContext());
+                LoginManager.getInstance().logOut();
+                Intent intent = new Intent(SettingsActivity.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.putExtra("Exit me", true);
+                startActivity(intent);
+                finish();
+                return true;
+            }
+        });
+
+        Preference share_button = (Preference) findPreference("share_on_fb_button");
+        share_button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
+            @Override
+            public boolean onPreferenceClick(Preference preference){
+
+                return true;
+            }
+        });
+
+        SharedPreferences default_prefs = PreferenceManager.getDefaultSharedPreferences(this);
+        default_prefs.registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    public void onSharedPreferenceChanged(SharedPreferences preferences, String key) {
+        SharedPreferences.Editor editor = preferences.edit();
+        if (key.equals("allow_to_ping_checkbox")){
+            Boolean allow = false;
+            allow = preferences.getBoolean("allow_to_ping_checkbox", allow);
+            allow = !allow;
+            getPreferenceScreen().getSharedPreferences()
+                    .unregisterOnSharedPreferenceChangeListener(this);
+            editor.putBoolean("allow_to_ping_checkbox", allow);
+            editor.commit();
+            getPreferenceScreen().getSharedPreferences()
+                    .registerOnSharedPreferenceChangeListener(this);
+        }
+        else if (key.equals("texted_push_notifications")){
+            Boolean allow = false;
+            allow = preferences.getBoolean("receive_push_notifications", allow);
+            allow = !allow;
+            getPreferenceScreen().getSharedPreferences()
+                    .unregisterOnSharedPreferenceChangeListener(this);
+            editor.putBoolean("receive_push_notifications", allow);
+            editor.commit();
+            getPreferenceScreen().getSharedPreferences()
+                    .registerOnSharedPreferenceChangeListener(this);
+        }
+    }
+
+    @Override
+    protected void onPause(){
+        super.onPause();
+        getPreferenceScreen().getSharedPreferences()
+                .unregisterOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    protected void onResume(){
+        super.onResume();
+        getPreferenceScreen().getSharedPreferences()
+                .registerOnSharedPreferenceChangeListener(this);
+    }
+
+    @Override
+    protected void onDestroy(){
+        super.onPause();
+        getPreferenceScreen().getSharedPreferences()
+                .unregisterOnSharedPreferenceChangeListener(this);
     }
 
     /**
@@ -200,42 +284,31 @@ public class SettingsActivity extends PreferenceActivity {
                         .getString(preference.getKey(), ""));
     }
 
-    /**
-     * This fragment shows general preferences only. It is used when the
-     * activity is showing a two-pane settings UI.
-     */
+
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class GeneralPreferenceFragment extends PreferenceFragment {
+    public static class GeneralPrefFragment extends PreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_general);
-
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines.
-            bindPreferenceSummaryToValue(findPreference("example_text"));
-            bindPreferenceSummaryToValue(findPreference("example_list"));
+            addPreferencesFromResource(R.xml.general_pref);
         }
     }
 
-    /**
-     * This fragment shows notification preferences only. It is used when the
-     * activity is showing a two-pane settings UI.
-     */
     @TargetApi(Build.VERSION_CODES.HONEYCOMB)
-    public static class NotificationPreferenceFragment extends PreferenceFragment {
+    public static class NotificationPrefFragment extends PreferenceFragment {
         @Override
         public void onCreate(Bundle savedInstanceState) {
             super.onCreate(savedInstanceState);
-            addPreferencesFromResource(R.xml.pref_notification);
+            addPreferencesFromResource(R.xml.notifications_pref);
+        }
+    }
 
-            // Bind the summaries of EditText/List/Dialog/Ringtone preferences
-            // to their values. When their values change, their summaries are
-            // updated to reflect the new value, per the Android Design
-            // guidelines.
-            bindPreferenceSummaryToValue(findPreference("notifications_new_message_ringtone"));
+    @TargetApi(Build.VERSION_CODES.HONEYCOMB)
+    public static class FacebookPrefFragment extends PreferenceFragment {
+        @Override
+        public void onCreate(Bundle savedInstanceState) {
+            super.onCreate(savedInstanceState);
+            addPreferencesFromResource(R.xml.facebook_pref);
         }
     }
 
