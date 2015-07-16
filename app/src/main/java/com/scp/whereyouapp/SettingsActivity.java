@@ -21,6 +21,7 @@ import android.text.TextUtils;
 
 import com.facebook.FacebookSdk;
 import com.facebook.login.LoginManager;
+import com.facebook.AccessToken;
 
 
 import java.util.List;
@@ -97,8 +98,13 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
         log_out_button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference){
+                FacebookSdk.sdkInitialize(getApplicationContext());
                 LoginManager.getInstance().logOut();
-                System.exit(0);
+                Intent intent = new Intent(SettingsActivity.this, MainActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                intent.putExtra("Exit me", true);
+                startActivity(intent);
+                finish();
                 return true;
             }
         });
@@ -107,6 +113,7 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
         share_button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference){
+
                 return true;
             }
         });
