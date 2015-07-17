@@ -52,6 +52,7 @@ import com.google.android.gms.maps.model.MarkerOptions;
 import com.facebook.FacebookSdk;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.text.DateFormat;
 import java.util.Date;
@@ -71,6 +72,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
     private TextView current_location;
     private final String[] osArray = { "Home", "Friends", "Trips", "Location Log", "Settings" };
     private Firebase firebaseRef;
+    private ArrayList<String> numbers;
 
     private CallbackManager callbackManager;
 
@@ -183,6 +185,14 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
         final LatLng home = new LatLng(43.477794,-80.537274);
         final LatLng work = new LatLng(43.473929,-80.546237);
 
+        numbers = new ArrayList<String>();
+        numbers.add("2269781724");
+        numbers.add("2269893193");
+        numbers.add("5197298639");
+        numbers.add("6479750458");
+
+        final MyTrip myTrip = new MyTrip(null, home, "User", null, numbers, 1, this);//Example trip created for testing purposes
+
         LocationTracker.LocationUpdateListener listener = new LocationTracker.LocationUpdateListener() {
             @Override
             public void onUpdate(Location oldLoc, long oldTime, Location newLoc, long newTime) {
@@ -193,6 +203,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
                     current_location.setText("Last known location: " + tracker.getPossiblyStaleLocation().getLatitude() + " " + tracker.getPossiblyStaleLocation().getLongitude());
                 }
                 LatLng cur_loc = new LatLng(newLoc.getLatitude(), newLoc.getLongitude());
+                myTrip.updateLocation(cur_loc);
                 String addr;
 
                 if((addr = getAddress(cur_loc.latitude, cur_loc.longitude)) != "") {
@@ -204,30 +215,30 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
                 map.addMarker(new MarkerOptions().position(work).title("Work").snippet(getAddress(work.latitude, work.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
                 map.setMyLocationEnabled(true);
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(cur_loc, 13));
-
-                if(Math.abs(cur_loc.latitude - testLat) < 0.001 && Math.abs(cur_loc.longitude - testLong) < 0.001 && text) {
-                    text = false;
-                    SmsManager smsManager = SmsManager.getDefault();
-                    String[] texted_numbers = {"2269781724", "2269893193", "5197298639", "6479750458"};
-                    for (int i = 0; i < texted_numbers.length; i++){
-                        smsManager.sendTextMessage(texted_numbers[i], null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
-                    }
-                    /*smsManager.sendTextMessage("2269781724", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
-                    smsManager.sendTextMessage("2269893193", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
-                    smsManager.sendTextMessage("5197298639", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
-                    smsManager.sendTextMessage("6479750458", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);*/
-
-                    NotificationCompat.Builder mBuilder =
-                            new NotificationCompat.Builder(context)
-                                    .setSmallIcon(R.mipmap.ic_launcher)
-                                    .setContentTitle("Where You App")
-                                    .setContentText("Location sent to friends");
-                    NotificationManager mNotificationManager =
-                            (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-                    mNotificationManager.notify(0, mBuilder.build());
-
-                    saveTextedNumbers(texted_numbers);
-                }
+//
+//                if(Math.abs(cur_loc.latitude - testLat) < 0.001 && Math.abs(cur_loc.longitude - testLong) < 0.001 && text) {
+//                    text = false;
+//                    SmsManager smsManager = SmsManager.getDefault();
+//                    String[] texted_numbers = {"2269781724", "2269893193", "5197298639", "6479750458"};
+//                    for (int i = 0; i < texted_numbers.length; i++){
+//                        smsManager.sendTextMessage(texted_numbers[i], null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
+//                    }
+//                    /*smsManager.sendTextMessage("2269781724", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
+//                    smsManager.sendTextMessage("2269893193", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
+//                    smsManager.sendTextMessage("5197298639", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
+//                    smsManager.sendTextMessage("6479750458", null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);*/
+//
+//                    NotificationCompat.Builder mBuilder =
+//                            new NotificationCompat.Builder(context)
+//                                    .setSmallIcon(R.mipmap.ic_launcher)
+//                                    .setContentTitle("Where You App")
+//                                    .setContentText("Location sent to friends");
+//                    NotificationManager mNotificationManager =
+//                            (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+//                    mNotificationManager.notify(0, mBuilder.build());
+//
+//                    saveTextedNumbers(texted_numbers);
+//                }
             }
         };
         tracker.start(listener);
