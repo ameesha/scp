@@ -21,9 +21,11 @@ import android.text.TextUtils;
 
 import com.facebook.FacebookSdk;
 import com.facebook.login.LoginManager;
-import com.facebook.AccessToken;
+import com.facebook.share.model.ShareLinkContent;
+import com.facebook.share.widget.ShareDialog;
 
 
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -113,7 +115,21 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
         share_button.setOnPreferenceClickListener(new Preference.OnPreferenceClickListener() {
             @Override
             public boolean onPreferenceClick(Preference preference){
+                FacebookSdk.sdkInitialize(getApplicationContext());
 
+                List<String> permissionNeeds = Arrays.asList("publish_actions");
+                LoginManager manager = LoginManager.getInstance();
+                manager.logInWithPublishPermissions(SettingsActivity.this, permissionNeeds);
+
+                ShareDialog shareDialog = new ShareDialog(SettingsActivity.this);
+                ShareLinkContent linkContent = new ShareLinkContent.Builder()
+                        .setContentTitle("Where You App")
+                        .setContentDescription(
+                                "Where You App is a kickass app that helps keep you safe, whether it's after a crazy party or just a late night of studying.")
+                        .setContentUrl(Uri.parse("www.google.com"))
+                        .build();
+
+                shareDialog.show(linkContent);
                 return true;
             }
         });

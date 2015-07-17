@@ -101,6 +101,7 @@ public class MainActivity extends AppCompatActivity {
         });
 
         LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("public_profile", "user_friends"));
+        //LoginManager.getInstance().logInWithPublishPermissions(this, Arrays.asList("publish_actions"));
     }
 
     @Override
