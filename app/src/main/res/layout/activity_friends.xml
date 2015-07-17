@@ -44,6 +44,7 @@
             android:layout_alignParentEnd="true"
             android:layout_alignTop="@+id/username" />
 
+
         <ListView
             android:id="@+id/friendListView"
             android:layout_width="match_parent"
