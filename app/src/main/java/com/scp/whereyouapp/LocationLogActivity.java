@@ -123,6 +123,9 @@ public class LocationLogActivity extends ActionBarActivity {
                     mDrawerLayout.closeDrawers();
                     startActivity(intent);
                 }
+                else if (value == "Location Log"){
+                    mDrawerLayout.closeDrawers();
+                }
                 else if (value == "Friends"){
                     Intent intent = new Intent(LocationLogActivity.this, FriendsActivity.class);
                     //Context packageContext

@@ -342,6 +342,8 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
                     Intent intent = new Intent(MainActivity.this, LocationLogActivity.class);
                     mDrawerLayout.closeDrawers();
                     startActivity(intent);
+                } else if (value == "Home") {
+                    mDrawerLayout.closeDrawers();
                 }
                 else if (value == "Friends"){
                     Intent intent = new Intent(MainActivity.this, FriendsActivity.class);

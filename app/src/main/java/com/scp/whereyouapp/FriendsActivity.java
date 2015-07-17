@@ -250,6 +250,8 @@ public class FriendsActivity extends AppCompatActivity {
                     Intent intent = new Intent(FriendsActivity.this, LocationLogActivity.class);
                     mDrawerLayout.closeDrawers();
                     startActivity(intent);
+                } else if (value == "Friends") {
+                    mDrawerLayout.closeDrawers();
                 }
                 else if (value == "Home"){
                     Intent intent = new Intent(FriendsActivity.this, MainActivity.class);
