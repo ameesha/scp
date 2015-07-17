@@ -116,6 +116,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
         });
 
         LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("public_profile", "user_friends"));
+        //LoginManager.getInstance().logInWithPublishPermissions(this, Arrays.asList("publish_actions"));
     }
 
     @Override
