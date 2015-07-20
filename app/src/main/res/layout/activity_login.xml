@@ -33,6 +33,18 @@
         android:layout_alignLeft="@+id/loginLabel"
         android:layout_alignStart="@+id/loginLabel" />
 
+    <EditText
+        android:id="@+id/number"
+        android:layout_width="330dp"
+        android:layout_height="wrap_content"
+        android:inputType="text"
+        android:hint="Enter a phone number"
+        android:imeOptions="actionSend"
+        android:layout_marginTop="16dp"
+        android:layout_below="@+id/username"
+        android:layout_alignLeft="@+id/loginLabel"
+        android:layout_alignStart="@+id/loginLabel" />
+
     <TextView android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/login"

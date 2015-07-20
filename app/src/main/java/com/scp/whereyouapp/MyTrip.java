@@ -33,14 +33,17 @@ public class MyTrip extends BaseTrip {
             public void run() {
                 NotificationCompat.Builder mBuilder =
                         new NotificationCompat.Builder(context)
-                                .setSmallIcon(R.mipmap.ic_launcher)
+                                .setSmallIcon(R.drawable.launcher_icon)
                                 .setContentTitle("Where You App")
                                 .setContentText("Time's up!");
                 NotificationManager mNotificationManager =
                         (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
                 mNotificationManager.notify(0, mBuilder.build());
             }
-        }, reminderTime*60*1000);
+        }, reminderTime*60 * 1000);
+
+        Log.e("RUNTIME", "TRIP CREATED: " + reminderTime);
+        updateLocation(cur_loc);
     }
 
     @Override
@@ -57,7 +60,7 @@ public class MyTrip extends BaseTrip {
 
             NotificationCompat.Builder mBuilder =
                     new NotificationCompat.Builder(context)
-                            .setSmallIcon(R.mipmap.ic_launcher)
+                            .setSmallIcon(R.drawable.launcher_icon)
                             .setContentTitle("Where You App")
                             .setContentText("Location sent to friends");
             NotificationManager mNotificationManager =
