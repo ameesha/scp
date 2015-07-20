@@ -16,6 +16,7 @@ import android.nfc.NfcAdapter;
 import android.nfc.NfcEvent;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
+import android.opengl.Visibility;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.NotificationCompat;
@@ -29,7 +30,10 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.EditText;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 import com.facebook.CallbackManager;
@@ -55,6 +59,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.text.DateFormat;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -73,8 +78,16 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
     private final String[] osArray = { "Home", "Friends", "Trips", "Location Log", "Settings" };
     private Firebase firebaseRef;
     private ArrayList<String> numbers;
+    private MyTrip myTrip;
+    private LatLng myLocation;
 
     private CallbackManager callbackManager;
+
+    private EditText destinationText;
+    private EditText delayText;
+    private EditText contactText;
+    private Button submitButton;
+    private Button addButton;
 
     NfcAdapter mNfcAdapter;
     public static final String MIME_TEXT_PLAIN = "text/plain";
@@ -129,11 +142,14 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
         setContentView(R.layout.activity_main);
         toolbar = (Toolbar) findViewById(R.id.toolbar);
         map = ((SupportMapFragment) getSupportFragmentManager().findFragmentById(R.id.map)).getMap();
+        myTrip = null;
         setSupportActionBar(toolbar);
 
         mDrawerList = (ListView)findViewById(R.id.navList);
         mDrawerLayout = (DrawerLayout)findViewById(R.id.drawer_layout);
         addDrawerItems();
+
+
 
         firebaseRef.authWithOAuthToken("facebook", loginResult.getAccessToken().getToken(), new Firebase.AuthResultHandler() {
             @Override
@@ -187,12 +203,68 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
         final LatLng work = new LatLng(43.473929,-80.546237);
 
         numbers = new ArrayList<String>();
-        numbers.add("2269781724");
-        numbers.add("2269893193");
-        numbers.add("5197298639");
-        numbers.add("6479750458");
 
-        final MyTrip myTrip = new MyTrip(null, home, "User", null, numbers, 1, this);//Example trip created for testing purposes
+        destinationText = (EditText)findViewById(R.id.destination_text);
+        delayText = (EditText)findViewById(R.id.time_text);
+        contactText = (EditText)findViewById(R.id.contact_text);
+
+        submitButton = (Button)findViewById(R.id.submit);
+        submitButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String address = destinationText.getText().toString();
+                addTargetMarker(address);
+
+                TextView displayDestination = (TextView) findViewById(R.id.display_destination_text);
+                TextView displayDelay = (TextView) findViewById(R.id.display_time_text);
+                TextView displayContacts = (TextView) findViewById(R.id.display_contact_text);
+
+
+                LatLng dest = getLocationFromAddress(destinationText.getText().toString());
+                displayDestination.setText(getAddress(dest.latitude, dest.longitude));
+
+                String delay = delayText.getText().toString();
+                Calendar c = Calendar.getInstance();
+                c.add(Calendar.MINUTE, Integer.parseInt(delay));
+                int minute = c.get(Calendar.MINUTE);
+                String minutes;
+                if(minute < 10) {
+                    minutes = "0" + minute;
+                } else {
+                    minutes = String.valueOf(minute);
+                }
+                String ampm;
+                if(c.get(Calendar.AM_PM) == 1) {
+                    ampm = "pm";
+                } else {
+                    ampm = "am";
+                }
+
+                displayDelay.setText(c.get(Calendar.HOUR) + ":" + minutes + ampm);
+
+                StringBuilder stringContacts = new StringBuilder();
+                for(int i = 0; i < numbers.size(); i++) {
+                    stringContacts.append(numbers.get(i) + "\n");
+                }
+                displayContacts.setText(stringContacts.toString());
+
+                findViewById(R.id.create_layout).setVisibility(View.GONE);
+                findViewById(R.id.display_layout).setVisibility(View.VISIBLE);
+
+
+                myTrip = new MyTrip(myLocation, dest, "User", null, numbers, Long.parseLong(delay), context);//Example trip created for testing purposes
+            }
+        });
+
+        addButton = (Button)findViewById(R.id.add_contact);
+        addButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                numbers.add(contactText.getText().toString());
+                contactText.setText("");
+                contactText.setHint("Add Another");
+            }
+        });
 
         LocationTracker.LocationUpdateListener listener = new LocationTracker.LocationUpdateListener() {
             @Override
@@ -204,7 +276,8 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
                     current_location.setText("Last known location: " + tracker.getPossiblyStaleLocation().getLatitude() + " " + tracker.getPossiblyStaleLocation().getLongitude());
                 }
                 LatLng cur_loc = new LatLng(newLoc.getLatitude(), newLoc.getLongitude());
-                myTrip.updateLocation(cur_loc);
+                myLocation = cur_loc;
+                updateActiveTrips(cur_loc);
                 String addr;
 
                 if((addr = getAddress(cur_loc.latitude, cur_loc.longitude)) != "") {
@@ -212,8 +285,8 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
                 }
                 map.clear();
                 map.addMarker(new MarkerOptions().position(cur_loc).title("Current location").snippet(addr));
-                map.addMarker(new MarkerOptions().position(home).title("Home").snippet(getAddress(home.latitude, home.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
-                map.addMarker(new MarkerOptions().position(work).title("Work").snippet(getAddress(work.latitude, work.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+//                map.addMarker(new MarkerOptions().position(home).title("Home").snippet(getAddress(home.latitude, home.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+//                map.addMarker(new MarkerOptions().position(work).title("Work").snippet(getAddress(work.latitude, work.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
                 map.setMyLocationEnabled(true);
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(cur_loc, 13));
 //
@@ -308,6 +381,44 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
             e.printStackTrace();
         }
         return "";
+    }
+
+    private LatLng getLocationFromAddress(String strAddress){
+
+        Geocoder coder = new Geocoder(this);
+        List<Address> address;
+        LatLng p1 = null;
+
+        try {
+            address = coder.getFromLocationName(strAddress,5);
+            if (address == null) {
+                return null;
+            }
+            Address location = address.get(0);
+            location.getLatitude();
+            location.getLongitude();
+
+            p1 = new LatLng(location.getLatitude(),location.getLongitude());
+
+            return p1;
+        }
+        catch(Exception e) {
+            return null;
+        }
+    }
+
+    private void addTargetMarker(String strAdress) {
+        Log.e("ADDRESS", "adding Target");
+        LatLng address = getLocationFromAddress(strAdress);
+        map.addMarker(new MarkerOptions().position(address).title("Target Location").snippet(strAdress).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_GREEN)));
+
+        map.moveCamera(CameraUpdateFactory.newLatLngZoom(address, 13));
+    }
+
+    private void updateActiveTrips(LatLng location) {
+        if(myTrip != null) {
+            myTrip.updateLocation(location);
+        }
     }
 
     private void sendSMS(String phoneNo, String message) {
