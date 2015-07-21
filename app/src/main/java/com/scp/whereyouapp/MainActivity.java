@@ -166,8 +166,18 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
                         }
                         else {
                             Globals.setUsername(snapshot.child("users").child(Globals.getUid()).child("username").getValue().toString());
-                            Globals.setEnablePush((Boolean) snapshot.child("users").child(Globals.getUid()).child("enablePush").getValue());
+                            if (!snapshot.child("users").hasChild(Globals.getUid()) || !snapshot.child("users").child(Globals.getUid()).hasChild("enablePing")){
+                                Map<String, Object> usersMap = new HashMap<String, Object>();
+                                usersMap.put("enablePing", true);
+                                firebaseRef.child("users").child(Globals.getUid()).updateChildren(usersMap);
+                            }
+                            if (!snapshot.child("users").hasChild(Globals.getUid()) || !snapshot.child("users").child(Globals.getUid()).hasChild("enablePush")){
+                                Map<String, Object> usersMap = new HashMap<String, Object>();
+                                usersMap.put("enablePush", true);
+                                firebaseRef.child("users").child(Globals.getUid()).updateChildren(usersMap);
+                            }
                             Globals.setEnablePing((Boolean) snapshot.child("users").child(Globals.getUid()).child("enablePing").getValue());
+                            Globals.setEnablePush((Boolean) snapshot.child("users").child(Globals.getUid()).child("enablePush").getValue());
                         }
                     }
                     @Override
