@@ -59,10 +59,14 @@ public class LoginActivity extends Activity {
 
                     if (!snapshot.child("usernameToUid").hasChild(username)) {
                         Globals.setUsername(username);
+                        Globals.setEnablePing(true);
+                        Globals.setEnablePush(true);
                         usernameToUidMap.put(Globals.getUsername(), Globals.getUid());
                         firebaseRef.child("usernameToUid").updateChildren(usernameToUidMap);
 
                         usersMap.put("username", Globals.getUsername());
+                        usersMap.put("enablePush", Globals.getEnablePush());
+                        usersMap.put("enablePing", Globals.getEnablePing());
                         firebaseRef.child("users").child(Globals.getUid()).updateChildren(usersMap);
                         finish();
                     }
@@ -79,8 +83,8 @@ public class LoginActivity extends Activity {
             SharedPreferences sp = getSharedPreferences("settings", Context.MODE_PRIVATE);
             SharedPreferences.Editor editor = sp.edit();
             editor.putString("username", username);
-            editor.putBoolean("allow_friends_to_ping", true);
-            editor.putBoolean("receive_push_notifications", true);
+            editor.putBoolean("allow_friends_to_ping", Globals.getEnablePing());
+            editor.putBoolean("receive_push_notifications", Globals.getEnablePush());
             editor.commit();
             finish();
         }

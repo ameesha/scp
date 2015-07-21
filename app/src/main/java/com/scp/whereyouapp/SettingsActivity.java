@@ -10,6 +10,7 @@ import android.media.RingtoneManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.CheckBoxPreference;
 import android.preference.ListPreference;
 import android.preference.Preference;
 import android.preference.PreferenceActivity;
@@ -23,10 +24,13 @@ import com.facebook.FacebookSdk;
 import com.facebook.login.LoginManager;
 import com.facebook.share.model.ShareLinkContent;
 import com.facebook.share.widget.ShareDialog;
+import com.firebase.client.Firebase;
 
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * A {@link PreferenceActivity} that presents a set of application settings. On
@@ -76,9 +80,8 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
         Preference pref = (Preference) findPreference("display_username");
         pref.setSummary(username);
         Preference ping_pref = (Preference) findPreference("allow_to_ping_checkbox");
-        Boolean ping_allow = true;;
-        ping_allow = sp.getBoolean("allow_friends_to_ping", ping_allow);
-        ping_pref.setEnabled(ping_allow);
+        Boolean ping_allow = Globals.getEnablePing();
+        ((CheckBoxPreference) ping_pref).setChecked(ping_allow);
 
         // add notification preferences
         header = new PreferenceCategory(this);
@@ -87,9 +90,8 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
         addPreferencesFromResource(R.xml.notifications_pref);
 
         Preference notification_pref = (Preference) findPreference("texted_push_notifications");
-        Boolean notification_allow = true;;
-        notification_allow = sp.getBoolean("allow_friends_to_ping", notification_allow);
-        notification_pref.setEnabled(notification_allow);
+        Boolean notification_allow = Globals.getEnablePush();
+        ((CheckBoxPreference) notification_pref).setChecked(notification_allow);
 
         // add facebook preferences
         header = new PreferenceCategory(this);
@@ -141,20 +143,27 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
     @Override
     public void onSharedPreferenceChanged(SharedPreferences preferences, String key) {
         SharedPreferences.Editor editor = preferences.edit();
+        Firebase firebaseRef = new Firebase("https://whereyouapp.firebaseio.com/");
+        Map<String, Object> usersMap = new HashMap<String, Object>();
+
         if (key.equals("allow_to_ping_checkbox")){
-            Boolean allow = false;
-            allow = preferences.getBoolean("allow_to_ping_checkbox", allow);
+            Boolean allow = Globals.getEnablePing();
             allow = !allow;
             getPreferenceScreen().getSharedPreferences()
                     .unregisterOnSharedPreferenceChangeListener(this);
-            editor.putBoolean("allow_to_ping_checkbox", allow);
+            editor.putBoolean("allow_friends_to_ping", allow);
             editor.commit();
             getPreferenceScreen().getSharedPreferences()
                     .registerOnSharedPreferenceChangeListener(this);
+
+            Globals.setEnablePing(allow);
+            usersMap.put("enablePing", allow);
+            firebaseRef.child("users").child(Globals.getUid()).updateChildren(usersMap);
         }
         else if (key.equals("texted_push_notifications")){
-            Boolean allow = false;
-            allow = preferences.getBoolean("receive_push_notifications", allow);
+
+
+            Boolean allow = Globals.getEnablePush();
             allow = !allow;
             getPreferenceScreen().getSharedPreferences()
                     .unregisterOnSharedPreferenceChangeListener(this);
@@ -162,6 +171,10 @@ public class SettingsActivity extends PreferenceActivity implements SharedPrefer
             editor.commit();
             getPreferenceScreen().getSharedPreferences()
                     .registerOnSharedPreferenceChangeListener(this);
+
+            Globals.setEnablePush(allow);
+            usersMap.put("enablePush", allow);
+            firebaseRef.child("users").child(Globals.getUid()).updateChildren(usersMap);
         }
     }
 

@@ -7,6 +7,10 @@ public class Globals {
     private static String uid;
     private static String username;
 
+    private static boolean enablePush = true;
+    private static boolean enablePing = true;
+
+
     public static String getUid() {
         return uid;
     }
@@ -18,5 +22,18 @@ public class Globals {
     }
     public static void setUsername(String str) {
         username = str;
+    }
+
+    public static void setEnablePush(boolean bool){
+        enablePush = bool;
+    }
+    public static void setEnablePing(boolean bool){
+        enablePing = bool;
+    }
+    public static boolean getEnablePush(){
+        return enablePush;
+    }
+    public static boolean getEnablePing(){
+        return enablePing;
     }
 }
