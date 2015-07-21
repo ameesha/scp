@@ -166,6 +166,8 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
                         }
                         else {
                             Globals.setUsername(snapshot.child("users").child(Globals.getUid()).child("username").getValue().toString());
+                            Globals.setEnablePush((Boolean) snapshot.child("users").child(Globals.getUid()).child("enablePush").getValue());
+                            Globals.setEnablePing((Boolean) snapshot.child("users").child(Globals.getUid()).child("enablePing").getValue());
                         }
                     }
                     @Override
