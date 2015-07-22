@@ -1,6 +1,8 @@
 package com.scp.whereyouapp;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.app.AlarmManager;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
@@ -17,6 +19,7 @@ import android.nfc.NfcEvent;
 import android.nfc.Tag;
 import android.nfc.tech.Ndef;
 import android.opengl.Visibility;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.app.NotificationCompat;
@@ -130,6 +133,12 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
 
         LoginManager.getInstance().logInWithReadPermissions(this, Arrays.asList("public_profile", "user_friends"));
         //LoginManager.getInstance().logInWithPublishPermissions(this, Arrays.asList("publish_actions"));
+
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, LocationReceiver.class);
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, 0);
+        alarmManager.setRepeating(AlarmManager.RTC_WAKEUP, System.currentTimeMillis(), 2000,
+                pendingIntent);
     }
 
     @Override
@@ -286,6 +295,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
                 }
                 if (tracker.hasPossiblyStaleLocation()) {
                     current_location.setText("Last known location: " + tracker.getPossiblyStaleLocation().getLatitude() + " " + tracker.getPossiblyStaleLocation().getLongitude());
+                    Globals.setLocation(tracker.getPossiblyStaleLocation());
                 }
                 LatLng cur_loc = new LatLng(newLoc.getLatitude(), newLoc.getLongitude());
                 myLocation = cur_loc;
@@ -294,6 +304,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
 
                 if((addr = getAddress(cur_loc.latitude, cur_loc.longitude)) != "") {
                     current_location.setText("Current location: " + addr);
+                    Globals.setLocation(newLoc);
                 }
                 map.clear();
                 map.addMarker(new MarkerOptions().position(cur_loc).title("Current location").snippet(addr));
@@ -480,6 +491,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
         });
     }
 
+    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     @Override
     public NdefMessage createNdefMessage(NfcEvent event) {
         String text = ("UserID" + "k2sandhu");

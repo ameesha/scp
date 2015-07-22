@@ -1,11 +1,14 @@
 package com.scp.whereyouapp;
 
+import android.location.Location;
+
 /**
  * Created by Christine on 7/15/2015.
  */
 public class Globals {
     private static String uid;
     private static String username;
+    private static Location location;
 
     private static boolean enablePush = true;
     private static boolean enablePing = true;
@@ -22,6 +25,12 @@ public class Globals {
     }
     public static void setUsername(String str) {
         username = str;
+    }
+    public static Location getLocation() {
+        return location;
+    }
+    public static void setLocation(Location loc) {
+        location = loc;
     }
 
     public static void setEnablePush(boolean bool){

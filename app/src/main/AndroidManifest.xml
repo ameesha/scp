@@ -88,6 +88,10 @@
             android:name=".FriendsActivity"
             android:label="@string/title_activity_friends" >
         </activity>
+        <receiver
+            android:name="com.scp.whereyouapp.LocationReceiver"
+            android:exported="false">
+        </receiver>
     </application>
 
 </manifest>
