@@ -7,13 +7,18 @@ import android.support.v4.app.NotificationCompat;
 import android.telephony.SmsManager;
 import android.util.Log;
 
+import com.firebase.client.Firebase;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 
 public class MyTrip extends BaseTrip {
     protected boolean text = true;
+    private Firebase firebaseRef;
 
     ArrayList<String> allowedFriends;
     ArrayList<String> numbersToText;
@@ -23,6 +28,7 @@ public class MyTrip extends BaseTrip {
     public MyTrip(LatLng cur_loc, LatLng dest, String user, ArrayList<String> friends, ArrayList<String> numbers, long time, Context ctxt) {
         super(cur_loc, dest, user, ctxt);
 
+        firebaseRef = new Firebase("https://whereyouapp.firebaseio.com/");
         allowedFriends = friends;
         numbersToText = numbers;
         reminderTime = time;
@@ -43,6 +49,23 @@ public class MyTrip extends BaseTrip {
         }, reminderTime*60 * 1000);
 
         Log.e("RUNTIME", "TRIP CREATED: " + reminderTime);
+        if(Globals.getUid() != null && Globals.getUsername() != null) {
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("currentLat", cur_loc.latitude);
+            map.put("currentLong", cur_loc.longitude);
+            map.put("destLat", dest.latitude);
+            map.put("destLong", dest.longitude);
+//            map.put("allowedFriends", friends);
+
+            //test data
+            List<String> friendsList = new ArrayList<String>();
+            friendsList.add("ameesha");
+            friendsList.add("ckatigbak");
+            friendsList.add("selinakyle");
+
+            map.put("allowedFriends", friendsList);
+            firebaseRef.child("trips").child(Globals.getUsername()).updateChildren(map);
+        }
         updateLocation(cur_loc);
     }
 

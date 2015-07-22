@@ -132,6 +132,11 @@ public class LocationLogActivity extends ActionBarActivity {
                     mDrawerLayout.closeDrawers();
                     startActivity(intent);
                 }
+                else if (value == "Trips"){
+                    Intent intent = new Intent(LocationLogActivity.this, TripActivity.class);
+                    mDrawerLayout.closeDrawers();
+                    startActivity(intent);
+                }
                 else{
                     Toast.makeText(LocationLogActivity.this, osArray[(int) id], Toast.LENGTH_SHORT).show();
                 }

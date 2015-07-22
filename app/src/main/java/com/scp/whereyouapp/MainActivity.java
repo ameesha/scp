@@ -484,6 +484,11 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
                     mDrawerLayout.closeDrawers();
                     startActivity(intent);
                 }
+                else if (value == "Trips"){
+                    Intent intent = new Intent(MainActivity.this, TripActivity.class);
+                    mDrawerLayout.closeDrawers();
+                    startActivity(intent);
+                }
                 else{
                     Toast.makeText(MainActivity.this, osArray[(int) id], Toast.LENGTH_SHORT).show();
                 }
