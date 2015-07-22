@@ -19,12 +19,10 @@ public class LocationReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         firebaseRef = new Firebase("https://whereyouapp.firebaseio.com/");
-Log.e("location", String.valueOf((Globals.getLocation() == null) + " " + (Globals.getUid() == null)));
         if((loc = Globals.getLocation()) != null && Globals.getUid() != null) {
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("location", loc.getLatitude() + "," + loc.getLongitude());
             firebaseRef.child("users").child(Globals.getUid()).updateChildren(map);
-            Log.e("location", loc.getLatitude() + "," + loc.getLongitude());
         }
     }
 }
