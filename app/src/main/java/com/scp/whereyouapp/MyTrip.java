@@ -11,11 +11,16 @@ import android.support.v4.app.NotificationCompat;
 import android.telephony.SmsManager;
 import android.util.Log;
 
+import com.firebase.client.DataSnapshot;
 import com.firebase.client.Firebase;
+import com.firebase.client.FirebaseError;
+import com.firebase.client.ValueEventListener;
 import com.google.android.gms.maps.model.LatLng;
 
 import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -23,6 +28,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 
 public class MyTrip extends BaseTrip {
@@ -31,6 +37,8 @@ public class MyTrip extends BaseTrip {
 
     ArrayList<String> allowedFriends;
     ArrayList<String> numbersToText;
+    ArrayList<Map.Entry<String, String>> pingLog;
+
     long reminderTime; //time in minutes before app sends a reminder to the user
     Handler handler;
     SmsManager smsManager = SmsManager.getDefault();
@@ -39,6 +47,7 @@ public class MyTrip extends BaseTrip {
         super(cur_loc, dest, user, ctxt);
 
         firebaseRef = new Firebase("https://whereyouapp.firebaseio.com/");
+        pingLog = new ArrayList<Map.Entry<String, String>>();
         allowedFriends = friends;
         numbersToText = numbers;
         reminderTime = time;
@@ -63,7 +72,7 @@ public class MyTrip extends BaseTrip {
                         smsManager.sendTextMessage(numbersToText.get(i), null, Globals.getUsername() + " has not yet arrived at their destination. Would you like to send them a text?", null, null);
                     }
                 }
-            }, reminderTime*60 * 1000);
+            }, reminderTime * 60 * 1000);
         }
 
         Log.e("RUNTIME", "TRIP CREATED: " + reminderTime);
@@ -111,6 +120,14 @@ public class MyTrip extends BaseTrip {
             saveTextedNumbers(numbersToText);
             return true;
         }
+
+        if(Globals.getUid() != null && Globals.getUsername() != null) {
+            Map<String, Object> map = new HashMap<String, Object>();
+            map.put("currentLat", cur_loc.latitude);
+            map.put("currentLong", cur_loc.longitude);
+            firebaseRef.child("trips").child(Globals.getUsername()).updateChildren(map);
+        }
+        updatePingLog();
         return false;
     }
 
@@ -142,7 +159,56 @@ public class MyTrip extends BaseTrip {
         reminderTime = -1;
         destination = null;
 
-        //TODO: delete this trip from firebase
+        if(Globals.getUid() != null && Globals.getUsername() != null) {
+            firebaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot snapshot) {
+                    if(snapshot.child("trips").child(Globals.getUsername()).hasChild("pingLog")) {
+                        DataSnapshot log = snapshot.child("trips").child(Globals.getUsername()).child("pingLog");
+
+                        Map<String, Object> ret = (Map<String, Object>) log.getValue();
+
+                        for (Map.Entry<String, Object> entry : ret.entrySet()) {
+                            Map.Entry<String, String> logEntry = (Map.Entry<String, String>) ((Map<String, String>) entry.getValue()).entrySet().toArray()[0];
+                            Log.e("PingLog", logEntry.toString());
+                            pingLog.add(logEntry);
+                        }
+                        //TODO: store pingLog information in Location Log
+                        firebaseRef.child("trips").child(Globals.getUsername()).removeValue();
+                    }
+                }
+
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
+                }
+            });
+        }
+    }
+
+    private void updatePingLog() {
+        if(Globals.getUid() != null && Globals.getUsername() != null) {
+            firebaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
+                @Override
+                public void onDataChange(DataSnapshot snapshot) {
+                    if(snapshot.child("trips").child(Globals.getUsername()).hasChild("pingLog")) {
+                        DataSnapshot log = snapshot.child("trips").child(Globals.getUsername()).child("pingLog");
+
+                        Map<String, Object> ret = (Map<String, Object>) log.getValue();
+
+                        for (Map.Entry<String, Object> entry : ret.entrySet()) {
+                            Map.Entry<String, String> logEntry = (Map.Entry<String, String>) ((Map<String, String>) entry.getValue()).entrySet().toArray()[0];
+                            Log.e("PingLog", logEntry.toString());
+                            pingLog.add(logEntry);
+                        }
+                    }
+                }
+
+                @Override
+                public void onCancelled(FirebaseError firebaseError) {
+                }
+            });
+        }
+        //TODO: store pingLog information in Location Log
     }
 
     private String getAddress(double lat, double lon) {

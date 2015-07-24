@@ -101,6 +101,8 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
     private Button cancelButton;
     private Button favlocButton;
 
+    private Button updateButton; //TODO: remove this
+
     NfcAdapter mNfcAdapter;
     public static final String MIME_TEXT_PLAIN = "text/plain";
 
@@ -346,7 +348,14 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
             }
         });
 
-
+        updateButton = (Button)findViewById(R.id.update_button);
+        updateButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Log.e("UPDATE", "FAKE");
+                updateActiveTrips(work);
+            }
+        });
 
         LocationTracker.LocationUpdateListener listener = new LocationTracker.LocationUpdateListener() {
             @Override
