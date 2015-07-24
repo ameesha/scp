@@ -258,6 +258,11 @@ public class FriendsActivity extends AppCompatActivity {
                     mDrawerLayout.closeDrawers();
                     startActivity(intent);
                 }
+                else if (value == "Trips"){
+                    Intent intent = new Intent(FriendsActivity.this, TripActivity.class);
+                    mDrawerLayout.closeDrawers();
+                    startActivity(intent);
+                }
                 else{
                     Toast.makeText(FriendsActivity.this, osArray[(int) id], Toast.LENGTH_SHORT).show();
                 }

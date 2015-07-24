@@ -16,88 +16,110 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true">
 
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:id="@+id/trip_title"
-        android:text="Create a Trip"
-        android:textSize="36sp"
-        android:textColor="@color/wallet_holo_blue_light"
-        android:layout_alignParentTop="true"
-        />
-
         <TextView
-            android:id="@+id/destination_label"
-            android:layout_width="110dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Destination: "
-            android:layout_gravity="right"
+            android:id="@+id/trip_title"
+            android:text="Create a Trip"
+            android:textSize="36sp"
+            android:textColor="@color/wallet_holo_blue_light"
+            android:layout_alignParentTop="true"
+            />
+
+        <ListView xmlns:android="http://schemas.android.com/apk/res/android"
+            android:id="@+id/contact_list"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_below="@id/trip_title"
-            />
+            android:visibility="gone"/>
 
-    <EditText
-        android:id="@+id/destination_text"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:hint="Address"
-        android:layout_below="@id/destination_label"
-        />
-
-        <TextView
-            android:id="@+id/time_label"
-            android:layout_width="110dp"
+        <RelativeLayout
+            android:id="@+id/trip_fields"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Reminder delay: "
-            android:layout_below="@id/destination_text"
-            />
+            android:layout_below="@id/trip_title">
 
-    <EditText
-        android:id="@+id/time_text"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:hint="Minutes"
-        android:layout_below="@id/time_label"/>
+            <TextView
+                android:id="@+id/destination_label"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:text="Destination: "
+                android:layout_gravity="right"
+                />
 
-        <TextView
-            android:id="@+id/contact_label"
-            android:layout_width="110dp"
-            android:layout_height="wrap_content"
-            android:text="Recipients: "
-            android:layout_below="@id/time_text"
-            />
+            <EditText
+                android:id="@+id/destination_text"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:hint="Address"
+                android:layout_below="@id/destination_label"
+                />
 
-        <EditText
-            android:id="@+id/contact_text"
-            android:layout_width="200dp"
-            android:layout_height="wrap_content"
-            android:hint="Phone Number"
-            android:layout_below="@id/contact_label"/>
+            <TextView
+                android:id="@+id/time_label"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:text="Reminder delay: "
+                android:layout_below="@id/destination_text"
+                />
 
-        <Button
-            android:id="@+id/add_contact"
-            android:layout_width="50dp"
-            android:layout_height="40dp"
-            android:layout_toRightOf="@id/contact_text"
-            android:layout_alignTop="@id/contact_label"
-            android:layout_marginTop="15dp"
-            android:text="Add"
-            android:textAlignment="center"
-            android:textColor="#FFFFFF"
-            android:background="#777777"/>
+            <EditText
+                android:id="@+id/time_text"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:hint="Minutes"
+                android:layout_below="@id/time_label"/>
 
+            <TextView
+                android:id="@+id/contact_label"
+                android:layout_width="110dp"
+                android:layout_height="wrap_content"
+                android:text="Recipients: "
+                android:layout_below="@id/time_text"
+                />
 
+            <EditText
+                android:id="@+id/contact_text"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:hint="Phone Number"
+                android:layout_below="@id/contact_label"/>
 
-    <Button
-        android:id="@+id/submit"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/contact_text"
-        android:text="Submit"
-        android:textAlignment="center"
-        android:textColor="#FFFFFF"
-        android:background="#777777"/>
+            <Button
+                android:id="@+id/add_contact"
+                android:layout_width="50dp"
+                android:layout_height="40dp"
+                android:layout_toRightOf="@id/contact_text"
+                android:layout_alignTop="@id/contact_label"
+                android:layout_marginTop="15dp"
+                android:text="Add"
+                android:textAlignment="center"
+                android:textColor="#FFFFFF"
+                android:background="#777777"/>
 
-</RelativeLayout>
+            <Button
+                android:id="@+id/contact_list_button"
+                android:layout_width="200dp"
+                android:layout_height="25dp"
+                android:layout_below="@id/contact_text"
+                android:text="Add from contacts"
+                android:textAlignment="center"
+                android:textColor="#FFFFFF"
+                android:background="#777777"/>
+
+            <Button
+                android:id="@+id/submit"
+                android:layout_width="200dp"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/contact_list_button"
+                android:layout_marginTop="15dp"
+                android:text="Submit"
+                android:textAlignment="center"
+                android:textColor="#FFFFFF"
+                android:background="#777777"/>
+        </RelativeLayout>
+
+    </RelativeLayout>
 
     <RelativeLayout
         android:id="@+id/display_layout"
