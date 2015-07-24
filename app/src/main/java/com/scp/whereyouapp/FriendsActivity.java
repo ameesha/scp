@@ -225,10 +225,6 @@ public class FriendsActivity extends AppCompatActivity {
         });
     }
 
-    public void onRefreshClick(View view) {
-        updateFriends();
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
