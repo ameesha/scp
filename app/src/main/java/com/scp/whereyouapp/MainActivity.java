@@ -125,6 +125,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
         FacebookSdk.sdkInitialize(this.getApplicationContext());
         setContentView(R.layout.facebook);
         callbackManager = CallbackManager.Factory.create();
+        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
             @Override
             public void onSuccess(LoginResult loginResult) {
@@ -346,7 +347,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
         favlocButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                if (myTrip != null){
+                if (myTrip != null) {
                     AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                     builder.setTitle("Location Name");
                     final EditText input = new EditText(MainActivity.this);
@@ -440,7 +441,6 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
         };
         tracker.start(listener);
 
-        mNfcAdapter = NfcAdapter.getDefaultAdapter(this);
         if (mNfcAdapter != null) {
             // Register callback
             Log.e("NFC", "IS THERE");
@@ -602,6 +602,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
     @Override
     public NdefMessage createNdefMessage(NfcEvent event) {
         String text = (Globals.getUsername());
+        Log.e("NFC USERNAME: ", text);
         NdefMessage msg = new NdefMessage(
                 new NdefRecord[] { NdefRecord.createMime(
                         "application/com.scp.whereyouapp.MainActivity", text.getBytes())
@@ -613,7 +614,8 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
     public void onResume() {
         super.onResume();
         // Check to see that the Activity started due to an Android Beam
-
+        if (mNfcAdapter != null)
+            setupForegroundDispatch(this, mNfcAdapter);
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction()) || NfcAdapter.ACTION_TECH_DISCOVERED.equals(getIntent().getAction())) {
             processIntent(getIntent());
         }
@@ -622,7 +624,6 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
     @Override
     public void onNewIntent(Intent intent) {
         // onResume gets called after this to handle the intent
-        //setupForegroundDispatch(this, mNfcAdapter);
         processIntent(intent);
     }
 
@@ -631,7 +632,8 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
         /**
          * Call this before onPause, otherwise an IllegalArgumentException is thrown as well.
          */
-        //stopForegroundDispatch(this, mNfcAdapter);
+        if (mNfcAdapter != null)
+            stopForegroundDispatch(this, mNfcAdapter);
         super.onPause();
     }
 
@@ -641,7 +643,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
 
         final PendingIntent pendingIntent = PendingIntent.getActivity(activity.getApplicationContext(), 0, intent, 0);
 
-        IntentFilter[] filters = new IntentFilter[1];
+/*        IntentFilter[] filters = new IntentFilter[1];
         String[][] techList = new String[][]{};
 
         // Notice that this is the same filter as in our manifest.
@@ -654,11 +656,12 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
             throw new RuntimeException("Check your mime type.");
         }
 
-        adapter.enableForegroundDispatch(activity, pendingIntent, filters, techList);
+        adapter.enableForegroundDispatch(activity, pendingIntent, filters, techList);*/
+        adapter.enableForegroundDispatch(activity, pendingIntent, null, null);
     }
 
     /**
-     * @param activity The corresponding {@link } requesting to stop the foreground dispatch.
+     * @param activity The corresponding {@link BaseActivity} requesting to stop the foreground dispatch.
      * @param adapter The {@link NfcAdapter} used for the foreground dispatch.
      */
     public static void stopForegroundDispatch(final Activity activity, NfcAdapter adapter) {

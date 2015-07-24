@@ -144,10 +144,9 @@ public class FriendsActivity extends AppCompatActivity {
                 if ((friends = snapshot.child("users").child(Globals.getUid()).child("friend")).hasChildren()) {
                     Map<String, Object> ret = (Map<String, Object>) friends.getValue();
                     for (Map.Entry<String, Object> entry : ret.entrySet()) {
-                        if(entry.getValue().toString().equals("requested") || entry.getValue().toString().equals("requester")) {
+                        if (entry.getValue().toString().equals("requested") || entry.getValue().toString().equals("requester")) {
                             requestList.add(entry.getKey());
-                        }
-                        else {
+                        } else {
                             acceptedFriendList.add(entry.getKey());
                         }
                     }
@@ -156,10 +155,10 @@ public class FriendsActivity extends AppCompatActivity {
                 }
                 ArrayAdapter<String> friendArrayAdapter = new ArrayAdapter<String>(FriendsActivity.this, android.R.layout.simple_list_item_1, friendList) {
                     @Override
-                    public View getView(int position, View convertView,ViewGroup parent) {
+                    public View getView(int position, View convertView, ViewGroup parent) {
                         View view = super.getView(position, convertView, parent);
                         TextView item = (TextView) view.findViewById(android.R.id.text1);
-                        if(requestList.contains(item.getText().toString())) {
+                        if (requestList.contains(item.getText().toString())) {
                             item.setTextColor(Color.RED);
                         }
                         return view;
@@ -179,16 +178,30 @@ public class FriendsActivity extends AppCompatActivity {
         firebaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
-                Map<String, Object> map1 = new HashMap<String, Object>();
-                Map<String, Object> map2 = new HashMap<String, Object>();
+                if (snapshot.child("usernameToUid").hasChild(friend)) {
 
-                map1.put(friend, "requester");
-                firebaseRef.child("users").child(Globals.getUid()).child("friend").updateChildren(map1);
+                    //check that your friend isn't you
+                    if(!Globals.getUsername().equalsIgnoreCase(friend)) {
+                        Map<String,Object> map1 = new HashMap<String, Object>();
+                        Map<String,Object> map2 = new HashMap<String, Object>();
 
-                map2.put(Globals.getUsername(), "requested");
-                firebaseRef.child("users").child(snapshot.child("usernameToUid").child(friend).getValue().toString()).child("friend").updateChildren(map2);
+                        map1.put(friend, "requester");
+                        firebaseRef.child("users").child(Globals.getUid()).child("friend").updateChildren(map1);
 
-                updateFriends();
+                        map2.put(Globals.getUsername(), "requested");
+                        firebaseRef.child("users").child(snapshot.child("usernameToUid").child(friend).getValue().toString()).child("friend").updateChildren(map2);
+
+                        //TODO: change these toasts to textviews?
+           //             Toast.makeText(FriendsActivity.this, "Friend request sent!", Toast.LENGTH_SHORT).show();
+                        updateFriends();
+                    }
+             /*       else {
+                        Toast.makeText(FriendsActivity.this, "As much as you want to, can't add yourself as a friend", Toast.LENGTH_SHORT).show();
+                    }*/
+                }
+/*                else {
+                    Toast.makeText(FriendsActivity.this, "User does not exist", Toast.LENGTH_SHORT).show();
+                }*/
             }
 
             @Override
