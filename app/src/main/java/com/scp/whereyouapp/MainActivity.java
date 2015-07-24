@@ -103,6 +103,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
 
     NfcAdapter mNfcAdapter;
     public static final String MIME_TEXT_PLAIN = "text/plain";
+    public static final String TAG = "NfcDemo";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -566,18 +567,15 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
                     startActivity(intent);
                 } else if (value == "Home") {
                     mDrawerLayout.closeDrawers();
-                }
-                else if (value == "Friends"){
+                } else if (value == "Friends") {
                     Intent intent = new Intent(MainActivity.this, FriendsActivity.class);
                     mDrawerLayout.closeDrawers();
                     startActivity(intent);
-                }
-                else if (value == "Trips"){
+                } else if (value == "Trips") {
                     Intent intent = new Intent(MainActivity.this, TripActivity.class);
                     mDrawerLayout.closeDrawers();
                     startActivity(intent);
-                }
-                else{
+                } else {
                     Toast.makeText(MainActivity.this, osArray[(int) id], Toast.LENGTH_SHORT).show();
                 }
             }
@@ -587,7 +585,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
     @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     @Override
     public NdefMessage createNdefMessage(NfcEvent event) {
-        String text = ("UserID" + "k2sandhu");
+        String text = (Globals.getUsername());
         NdefMessage msg = new NdefMessage(
                 new NdefRecord[] { NdefRecord.createMime(
                         "application/com.scp.whereyouapp.MainActivity", text.getBytes())
@@ -608,6 +606,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
     @Override
     public void onNewIntent(Intent intent) {
         // onResume gets called after this to handle the intent
+        //setupForegroundDispatch(this, mNfcAdapter);
         processIntent(intent);
     }
 
@@ -616,19 +615,50 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
         /**
          * Call this before onPause, otherwise an IllegalArgumentException is thrown as well.
          */
+        //stopForegroundDispatch(this, mNfcAdapter);
         super.onPause();
     }
 
+    public static void setupForegroundDispatch(final Activity activity, NfcAdapter adapter) {
+        final Intent intent = new Intent(activity.getApplicationContext(), activity.getClass());
+        intent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
+
+        final PendingIntent pendingIntent = PendingIntent.getActivity(activity.getApplicationContext(), 0, intent, 0);
+
+        IntentFilter[] filters = new IntentFilter[1];
+        String[][] techList = new String[][]{};
+
+        // Notice that this is the same filter as in our manifest.
+        filters[0] = new IntentFilter();
+        filters[0].addAction(NfcAdapter.ACTION_NDEF_DISCOVERED);
+        filters[0].addCategory(Intent.CATEGORY_DEFAULT);
+        try {
+            filters[0].addDataType(MIME_TEXT_PLAIN);
+        } catch (IntentFilter.MalformedMimeTypeException e) {
+            throw new RuntimeException("Check your mime type.");
+        }
+
+        adapter.enableForegroundDispatch(activity, pendingIntent, filters, techList);
+    }
+
     /**
-     * Parses the NDEF Message from the intent and prints to the TextView
+     * @param activity The corresponding {@link } requesting to stop the foreground dispatch.
+     * @param adapter The {@link NfcAdapter} used for the foreground dispatch.
      */
+    public static void stopForegroundDispatch(final Activity activity, NfcAdapter adapter) {
+        adapter.disableForegroundDispatch(activity);
+    }
+
+
     void processIntent(Intent intent) {
         Parcelable[] rawMsgs = intent.getParcelableArrayExtra(
                 NfcAdapter.EXTRA_NDEF_MESSAGES);
         // only one message sent during the beam
         NdefMessage msg = (NdefMessage) rawMsgs[0];
         // record 0 contains the MIME type, record 1 is the AAR, if presen
-        Log.e("NFC Tag:", new String(msg.getRecords()[0].getPayload()));
-        Log.e("NFCCCC", "WAS HIT");
+        String friend = new String(msg.getRecords()[0].getPayload());
+        Log.e("NFC Tag:", friend);
+        FriendsActivity friendsAct = new FriendsActivity();
+        friendsAct.addNFCFriend(friend);
     }
 }

@@ -174,6 +174,29 @@ public class FriendsActivity extends AppCompatActivity {
         });
     }
 
+    public void addNFCFriend(String userName) {
+        friend = userName;
+        firebaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot snapshot) {
+                Map<String, Object> map1 = new HashMap<String, Object>();
+                Map<String, Object> map2 = new HashMap<String, Object>();
+
+                map1.put(friend, "requester");
+                firebaseRef.child("users").child(Globals.getUid()).child("friend").updateChildren(map1);
+
+                map2.put(Globals.getUsername(), "requested");
+                firebaseRef.child("users").child(snapshot.child("usernameToUid").child(friend).getValue().toString()).child("friend").updateChildren(map2);
+
+                updateFriends();
+            }
+
+            @Override
+            public void onCancelled(FirebaseError firebaseError) {
+            }
+        });
+    }
+
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
