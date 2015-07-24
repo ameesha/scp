@@ -2,6 +2,8 @@ package com.scp.whereyouapp;
 
 import android.app.NotificationManager;
 import android.content.Context;
+import android.location.Address;
+import android.location.Geocoder;
 import android.os.Handler;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.SmsManager;
@@ -10,9 +12,11 @@ import android.util.Log;
 import com.firebase.client.Firebase;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 
 
@@ -24,6 +28,7 @@ public class MyTrip extends BaseTrip {
     ArrayList<String> numbersToText;
     long reminderTime; //time in minutes before app sends a reminder to the user
     Handler handler;
+    SmsManager smsManager = SmsManager.getDefault();
 
     public MyTrip(LatLng cur_loc, LatLng dest, String user, ArrayList<String> friends, ArrayList<String> numbers, long time, Context ctxt) {
         super(cur_loc, dest, user, ctxt);
@@ -34,19 +39,27 @@ public class MyTrip extends BaseTrip {
         reminderTime = time;
 
         handler = new Handler();
-        handler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                NotificationCompat.Builder mBuilder =
-                        new NotificationCompat.Builder(context)
-                                .setSmallIcon(R.drawable.launcher_icon)
-                                .setContentTitle("Where You App")
-                                .setContentText("Time's up!");
-                NotificationManager mNotificationManager =
-                        (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-                mNotificationManager.notify(0, mBuilder.build());
-            }
-        }, reminderTime*60 * 1000);
+
+        if(reminderTime > 0) {
+            handler.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    NotificationCompat.Builder mBuilder =
+                            new NotificationCompat.Builder(context)
+                                    .setSmallIcon(R.drawable.launcher_icon)
+                                    .setContentTitle("Where You App")
+                                    .setContentText("Time's up!");
+                    NotificationManager mNotificationManager =
+                            (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
+                    mNotificationManager.notify(0, mBuilder.build());
+
+
+                    for (int i = 0; i < numbersToText.size(); i++) {
+                        smsManager.sendTextMessage(numbersToText.get(i), null, Globals.getUsername() + " has not yet arrived at their destination. Would you like to send them a text?", null, null);
+                    }
+                }
+            }, reminderTime*60 * 1000);
+        }
 
         Log.e("RUNTIME", "TRIP CREATED: " + reminderTime);
         if(Globals.getUid() != null && Globals.getUsername() != null) {
@@ -66,18 +79,17 @@ public class MyTrip extends BaseTrip {
             map.put("allowedFriends", friendsList);
             firebaseRef.child("trips").child(Globals.getUsername()).updateChildren(map);
         }
-        updateLocation(cur_loc);
+        //updateLocation(cur_loc);
     }
 
     @Override
-    public void updateLocation(LatLng cur_loc) {
+    public boolean updateLocation(LatLng cur_loc) {
         currentLocation = cur_loc;
 
         if(Math.abs(cur_loc.latitude - destination.latitude) < 0.001 && Math.abs(cur_loc.longitude - destination.longitude) < 0.001 && text) {
             text = false;
-            SmsManager smsManager = SmsManager.getDefault();
             for (int i = 0; i < numbersToText.size(); i++) {
-                smsManager.sendTextMessage(numbersToText.get(i), null, "@DC: " + cur_loc.latitude + ", " + cur_loc.longitude, null, null);
+                smsManager.sendTextMessage(numbersToText.get(i), null, Globals.getUsername() + " has arrived at " + getAddress(cur_loc.latitude, cur_loc.longitude), null, null);
             }
 
 
@@ -89,6 +101,39 @@ public class MyTrip extends BaseTrip {
             NotificationManager mNotificationManager =
                     (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
             mNotificationManager.notify(0, mBuilder.build());
+
+            return true;
         }
+
+        return false;
+    }
+
+    public void cancel() {
+        handler.removeCallbacksAndMessages(null);
+        allowedFriends = null;
+        numbersToText = null;
+        reminderTime = -1;
+        destination = null;
+
+        //TODO: delete this trip from firebase
+    }
+
+    private String getAddress(double lat, double lon) {
+        Geocoder geocoder= new Geocoder(context, Locale.ENGLISH);
+        try {
+            List<Address> addresses = geocoder.getFromLocation(lat, lon, 1);
+            if(addresses != null) {
+                Address fetchedAddress = addresses.get(0);
+                StringBuilder strAddress = new StringBuilder();
+                for(int i=0; i<fetchedAddress.getMaxAddressLineIndex(); i++) {
+                    strAddress.append(fetchedAddress.getAddressLine(i)).append("\n");
+                }
+                return strAddress.toString();
+            }
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        return "";
     }
 }
