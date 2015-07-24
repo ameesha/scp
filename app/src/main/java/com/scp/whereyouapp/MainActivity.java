@@ -99,6 +99,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
     private Button contactListButton;
     private Button addButton;
     private Button cancelButton;
+    private Button favlocButton;
 
     NfcAdapter mNfcAdapter;
     public static final String MIME_TEXT_PLAIN = "text/plain";
@@ -334,6 +335,14 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
                 destinationMarker.remove();
                 destinationMarker = null;
                 numbers.clear();
+            }
+        });
+
+        favlocButton = (Button)findViewById(R.id.add_favloc);
+        favlocButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                
             }
         });
 

@@ -159,6 +159,18 @@
             android:layout_below="@id/display_destination_label"
             />
 
+        <Button
+            android:id="@+id/add_favloc"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:layout_toRightOf="@id/display_destination_text"
+            android:layout_alignBottom="@id/display_destination_text"
+            android:layout_marginBottom="15dp"
+            android:text="+ Favourite"
+            android:textAlignment="center"
+            android:textColor="#FFFFFF"
+            android:background="#777777"/>
+
         <TextView
             android:id="@+id/display_time_label"
             android:layout_width="110dp"
