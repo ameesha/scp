@@ -247,6 +247,10 @@ public class FriendsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    public void onRefreshClick(View view) {
+        updateFriends();
+    }
+
     public void onAddFriendClick(View view) {
         friend = ((EditText) findViewById(R.id.friend)).getText().toString().trim().toLowerCase();
         firebaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
