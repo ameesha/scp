@@ -52,6 +52,20 @@ public class FriendsActivity extends AppCompatActivity {
         addDrawerItems();
 
         friendListView = (ListView)findViewById(R.id.friendListView);
+
+        Intent nfcIntent = getIntent();
+        Log.e("GETTING INTENT", "SHOULD FREAKING EXIST");
+        if(nfcIntent != null) {
+            Bundle bundleextras = nfcIntent.getExtras();
+            Log.e("GETTING BUNDLE", "DOESN'T HAVE TO EXIST BUT PLEASE STOP CRASHING ALREADY");
+            if (bundleextras != null && !bundleextras.isEmpty()) {
+                Log.e("BUNDLE ISN'T EMPTY", "yeah");
+                if (bundleextras.containsKey("NFCUserName")) {
+                    String userName = bundleextras.getString("NFCUserName");
+                    addNFCFriend(userName);
+               }
+            }
+        }
         updateFriends();
 
         friendListView.setOnItemLongClickListener(new AdapterView.OnItemLongClickListener() {
@@ -173,17 +187,18 @@ public class FriendsActivity extends AppCompatActivity {
         });
     }
 
-    public void addNFCFriend(String userName) {
+    private void addNFCFriend(String userName) {
         friend = userName;
+        Log.e("NEW FRIEND ", userName);
         firebaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
                 if (snapshot.child("usernameToUid").hasChild(friend)) {
 
                     //check that your friend isn't you
-                    if(!Globals.getUsername().equalsIgnoreCase(friend)) {
-                        Map<String,Object> map1 = new HashMap<String, Object>();
-                        Map<String,Object> map2 = new HashMap<String, Object>();
+                    if (!Globals.getUsername().equalsIgnoreCase(friend)) {
+                        Map<String, Object> map1 = new HashMap<String, Object>();
+                        Map<String, Object> map2 = new HashMap<String, Object>();
 
                         map1.put(friend, "requester");
                         firebaseRef.child("users").child(Globals.getUid()).child("friend").updateChildren(map1);
@@ -192,16 +207,16 @@ public class FriendsActivity extends AppCompatActivity {
                         firebaseRef.child("users").child(snapshot.child("usernameToUid").child(friend).getValue().toString()).child("friend").updateChildren(map2);
 
                         //TODO: change these toasts to textviews?
-           //             Toast.makeText(FriendsActivity.this, "Friend request sent!", Toast.LENGTH_SHORT).show();
-                        updateFriends();
+                                     Toast.makeText(FriendsActivity.this, "Friend request sent!", Toast.LENGTH_SHORT).show();
+                        //                updateFriends();
                     }
-             /*       else {
+                    else {
                         Toast.makeText(FriendsActivity.this, "As much as you want to, can't add yourself as a friend", Toast.LENGTH_SHORT).show();
-                    }*/
+                    }
                 }
-/*                else {
+                else {
                     Toast.makeText(FriendsActivity.this, "User does not exist", Toast.LENGTH_SHORT).show();
-                }*/
+                }
             }
 
             @Override
