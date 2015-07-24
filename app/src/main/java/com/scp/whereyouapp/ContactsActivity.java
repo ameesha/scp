@@ -40,7 +40,7 @@ public class ContactsActivity extends AppCompatActivity {
     private ListView contactListView;
     private ArrayList<String> contactList = new ArrayList<String>();
     private Map<String, String> selectedContactList = new HashMap<String,String>();
-
+    private int selPos = 0;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         // TODO Auto-generated method stub
@@ -54,11 +54,17 @@ public class ContactsActivity extends AppCompatActivity {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 final String value = contactList.get(position);
+        //        selPos = position;
                 selectedContactList.put(value.substring(value.indexOf(" - ") + 3, value.length()), value.substring(0, value.indexOf(" - ")));
                 updateContacts();
             }
         });
     }
+
+   /* public void onItemClick(AdapterView<?> adapter, View arg1, int position, long id) {
+        selPos = position;
+        updateContacts();
+    }*/
 
     private void readContacts() {
         // TODO Auto-generated method stub
@@ -73,18 +79,28 @@ public class ContactsActivity extends AppCompatActivity {
         }
     }
 
+
+
     private void updateContacts() {
         ArrayAdapter<String> friendArrayAdapter = new ArrayAdapter<String>(ContactsActivity.this, android.R.layout.simple_list_item_1, contactList) {
             @Override
             public View getView(int position, View convertView, ViewGroup parent) {
                 View view = super.getView(position, convertView, parent);
+
                 TextView item = (TextView) view.findViewById(android.R.id.text1);
                 String value = item.getText().toString();
                 Log.e("contacts", value.substring(0, value.indexOf(" - ")));
                 Log.e("contacts", String.valueOf(selectedContactList.containsValue(value.substring(0, value.indexOf(" - ")))));
+    //            String pos = String.valueOf(selPos);
                 if (selectedContactList.containsValue(value.substring(0, value.indexOf(" - ")))) {
+                    Log.e("Contacting: ", value.substring(0, value.indexOf(" - ")));
                     item.setTextColor(Color.RED);
                 }
+//fix this later
+      //          Log.e("Pos", pos);
+  //              if(Integer.getInteger(pos) != -1)
+    //                contactListView.smoothScrollToPosition(selPos);
+
                 return view;
             }
         };
