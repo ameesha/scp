@@ -22,8 +22,9 @@ public class BaseTrip {
         context = ctxt;
     }
 
-    public void updateLocation(LatLng location) {
+    public boolean updateLocation(LatLng location) {
         currentLocation = location;
+        return false;
     }
 
     public LatLng getLocation() {
