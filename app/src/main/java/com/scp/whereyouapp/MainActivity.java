@@ -3,9 +3,11 @@ package com.scp.whereyouapp;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlarmManager;
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
@@ -27,6 +29,7 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.telephony.SmsManager;
+import android.text.InputType;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -66,6 +69,7 @@ import java.text.DateFormat;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -84,7 +88,6 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
     private final String[] osArray = { "Home", "Friends", "Trips", "Location Log", "Settings" };
     private Firebase firebaseRef;
     private ArrayList<String> numbers;
-    private HashMap<String, LatLng> favouriteLocations;
     private MyTrip myTrip;
     private LatLng myLocation;
 
@@ -100,7 +103,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
     private Button addButton;
     private Button cancelButton;
     private Button favlocButton;
-
+    private String favLocName = "";
     private Button updateButton; //TODO: remove this
 
     NfcAdapter mNfcAdapter;
@@ -238,9 +241,6 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
         final LatLng work = new LatLng(43.473929,-80.546237);
 
         numbers = new ArrayList<String>();
-        favouriteLocations = new HashMap<String, LatLng>();
-        favouriteLocations.put("Work", work);
-        favouriteLocations.put("Home", home);
 
         contactList = (ListView)findViewById(R.id.contact_list);
         tripFields = (RelativeLayout)findViewById(R.id.trip_fields);
@@ -338,14 +338,40 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
                 destinationMarker.remove();
                 destinationMarker = null;
                 numbers.clear();
+                markFavouriteLocations();
             }
         });
 
         favlocButton = (Button)findViewById(R.id.add_favloc);
         favlocButton.setOnClickListener(new View.OnClickListener() {
             @Override
-            public void onClick(View v) {
-                
+            public void onClick(View view) {
+                if (myTrip != null){
+                    AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+                    builder.setTitle("Location Name");
+                    final EditText input = new EditText(MainActivity.this);
+                    input.setInputType(InputType.TYPE_CLASS_TEXT);
+                    builder.setView(input);
+
+                    builder.setPositiveButton("Add", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            favLocName = input.getText().toString();
+                            LatLng value = myTrip.getDestination();
+                            Globals.addFaveLocation(favLocName, value);
+                            Toast.makeText(MainActivity.this, "Location added!", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+
+                    builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.cancel();
+                        }
+                    });
+
+                    builder.show();
+                }
             }
         });
 
@@ -425,27 +451,6 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
 
     }
 
-//    private void saveTextedNumbers(String[] numbers){
-//        SharedPreferences sp = getSharedPreferences("notificationLog", Context.MODE_PRIVATE);
-//        SharedPreferences.Editor editor = sp.edit();
-//        boolean exists = sp.contains("texted_numbers");
-//        String current_numbers = null;
-//        if (exists){
-//            current_numbers = sp.getString("texted_numbers", current_numbers);
-//        }
-//        String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
-//        for (int i = 0; i < numbers.length; i++){
-//            if (current_numbers == null){
-//                current_numbers = "Number: " + numbers[i] + " " + currentDateTimeString;
-//            }
-//            else{
-//                current_numbers = current_numbers + " Number: "  + numbers[i] + " " + currentDateTimeString;
-//            }
-//        }
-//        editor.putString("texted_numbers", current_numbers);
-//        editor.commit();
-//    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
@@ -514,17 +519,19 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
 
     private void markFavouriteLocations() {
 
-        Object[] locations = favouriteLocations.keySet().toArray();
-
-        for(int i = 0; i < favouriteLocations.size(); i++) {
-            LatLng loc = favouriteLocations.get(locations[i]);
-
-            map.addMarker(new MarkerOptions().position(loc).title((String)locations[i]).snippet(getAddress(loc.latitude, loc.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+        final HashMap<String, LatLng> favelocs = Globals.getFaveLocations();
+        if (favelocs != null || favelocs.size() <= 0){
+            Object[] locations = favelocs.keySet().toArray();
+            for (int i = 0; i < favelocs.size(); i++){
+                LatLng loc = favelocs.get(locations[i]);
+                map.addMarker(new MarkerOptions().position(loc).title((String)locations[i]).snippet(getAddress(loc.latitude, loc.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
+            }
         }
+
         map.setOnMarkerClickListener(new GoogleMap.OnMarkerClickListener() {
             @Override
             public boolean onMarkerClick(Marker marker) {
-                if(favouriteLocations.containsKey(marker.getTitle())) {
+                if(favelocs.containsKey(marker.getTitle())) {
                     destinationText.setText(marker.getSnippet());
                 }
                 marker.showInfoWindow();
