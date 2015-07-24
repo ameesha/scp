@@ -5,6 +5,7 @@ import android.app.LoaderManager;
 import android.content.ContentResolver;
 import android.content.CursorLoader;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.Loader;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -29,6 +30,7 @@ import com.firebase.client.FirebaseError;
 import com.firebase.client.ValueEventListener;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -87,6 +89,13 @@ public class ContactsActivity extends AppCompatActivity {
             }
         };
         contactListView.setAdapter(friendArrayAdapter);
+    }
+
+    public void finishContacts(View view) {
+        Intent intent = new Intent(ContactsActivity.this, MainActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
+        intent.putExtra("contactNumbers", Arrays.copyOf(selectedContactList.values().toArray(), selectedContactList.size(), String[].class));
+        startActivity(intent);
     }
 }
 

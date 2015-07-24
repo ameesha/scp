@@ -12,6 +12,7 @@ import java.util.HashMap;
 public class Globals {
     private static String uid;
     private static String username;
+    private static String phoneNumber;
     private static Location location;
     private static HashMap<String, LatLng> favouriteLocations = new HashMap<>();
 
@@ -30,6 +31,12 @@ public class Globals {
     }
     public static void setUsername(String str) {
         username = str;
+    }
+    public static String getPhoneNumber() {
+        return phoneNumber;
+    }
+    public static void setPhoneNumber(String str) {
+        phoneNumber = str;
     }
     public static Location getLocation() {
         return location;

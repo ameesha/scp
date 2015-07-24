@@ -86,6 +86,9 @@ public class TripActivity extends AppCompatActivity {
         firebaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot snapshot) {
+                if(!snapshot.child("trips").hasChild(friend)){
+                    friend = "perm-" + friend;
+                }
                 DataSnapshot friends = snapshot.child("trips").child(friend).child("allowedFriends");
                 List<String> ret = (List<String>) friends.getValue();
                 Map<String, String> map = new HashMap<String, String>();
@@ -156,6 +159,7 @@ public class TripActivity extends AppCompatActivity {
                 }
                 else if (value == "Home"){
                     Intent intent = new Intent(TripActivity.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     mDrawerLayout.closeDrawers();
                     startActivity(intent);
                 }

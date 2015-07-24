@@ -306,6 +306,7 @@ public class FriendsActivity extends AppCompatActivity {
                 }
                 else if (value == "Home"){
                     Intent intent = new Intent(FriendsActivity.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     mDrawerLayout.closeDrawers();
                     startActivity(intent);
                 }
