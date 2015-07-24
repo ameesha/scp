@@ -588,7 +588,10 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
                     mDrawerLayout.closeDrawers();
                     startActivity(intent);
                 } else if (value == "Trips") {
-                    Intent intent = new Intent(MainActivity.this, TripActivity.class);
+//                    Intent intent = new Intent(MainActivity.this, TripActivity.class);
+//                    mDrawerLayout.closeDrawers();
+//                    startActivity(intent);
+                    Intent intent = new Intent(MainActivity.this, ContactsActivity.class);
                     mDrawerLayout.closeDrawers();
                     startActivity(intent);
                 } else {
