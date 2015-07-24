@@ -406,26 +406,26 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
 
     }
 
-    private void saveTextedNumbers(String[] numbers){
-        SharedPreferences sp = getSharedPreferences("notificationLog", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sp.edit();
-        boolean exists = sp.contains("texted_numbers");
-        String current_numbers = null;
-        if (exists){
-            current_numbers = sp.getString("texted_numbers", current_numbers);
-        }
-        String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
-        for (int i = 0; i < numbers.length; i++){
-            if (current_numbers == null){
-                current_numbers = "Number: " + numbers[i] + " " + currentDateTimeString;
-            }
-            else{
-                current_numbers = current_numbers + " Number: "  + numbers[i] + " " + currentDateTimeString;
-            }
-        }
-        editor.putString("texted_numbers", current_numbers);
-        editor.commit();
-    }
+//    private void saveTextedNumbers(String[] numbers){
+//        SharedPreferences sp = getSharedPreferences("notificationLog", Context.MODE_PRIVATE);
+//        SharedPreferences.Editor editor = sp.edit();
+//        boolean exists = sp.contains("texted_numbers");
+//        String current_numbers = null;
+//        if (exists){
+//            current_numbers = sp.getString("texted_numbers", current_numbers);
+//        }
+//        String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
+//        for (int i = 0; i < numbers.length; i++){
+//            if (current_numbers == null){
+//                current_numbers = "Number: " + numbers[i] + " " + currentDateTimeString;
+//            }
+//            else{
+//                current_numbers = current_numbers + " Number: "  + numbers[i] + " " + currentDateTimeString;
+//            }
+//        }
+//        editor.putString("texted_numbers", current_numbers);
+//        editor.commit();
+//    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {

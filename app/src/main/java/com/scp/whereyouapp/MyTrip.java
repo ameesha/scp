@@ -2,9 +2,11 @@ package com.scp.whereyouapp;
 
 import android.app.NotificationManager;
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.location.Address;
 import android.location.Geocoder;
 import android.os.Handler;
+import android.provider.Settings;
 import android.support.v4.app.NotificationCompat;
 import android.telephony.SmsManager;
 import android.util.Log;
@@ -12,6 +14,9 @@ import android.util.Log;
 import com.firebase.client.Firebase;
 import com.google.android.gms.maps.model.LatLng;
 
+import java.text.DateFormat;
+import java.util.ArrayList;
+import java.util.Date;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -100,12 +105,34 @@ public class MyTrip extends BaseTrip {
                             .setContentText("Location sent to friends");
             NotificationManager mNotificationManager =
                     (NotificationManager) context.getSystemService(Context.NOTIFICATION_SERVICE);
-            mNotificationManager.notify(0, mBuilder.build());
-
+            if (Globals.getEnablePush()){
+                mNotificationManager.notify(0, mBuilder.build());
+            }
+            saveTextedNumbers(numbersToText);
             return true;
         }
-
         return false;
+    }
+
+    private void saveTextedNumbers(ArrayList<String> numbers){
+        SharedPreferences sp = this.context.getSharedPreferences("notificationLog", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = sp.edit();
+        boolean exists = sp.contains("texted_numbers");
+        String current_numbers = null;
+        if (exists){
+            current_numbers = sp.getString("texted_numbers", current_numbers);
+        }
+        String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
+        for (int i = 0; i < numbers.size(); i++){
+            if (current_numbers == null){
+                current_numbers = "Number: " + numbers.get(i) + " " + currentDateTimeString;
+            }
+            else{
+                current_numbers = current_numbers + " Number: "  + numbers.get(i) + " " + currentDateTimeString;
+            }
+        }
+        editor.putString("texted_numbers", current_numbers);
+        editor.commit();
     }
 
     public void cancel() {

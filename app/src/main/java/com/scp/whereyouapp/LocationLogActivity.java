@@ -71,7 +71,7 @@ public class LocationLogActivity extends ActionBarActivity {
             }
             for (String n: s.split("Time: ")){
                 if (numAndTime == null){
-                    numAndTime = n;
+                    numAndTime = "Texted " + n;
                 }
                 else{
                     numAndTime = numAndTime + " at " + n;
