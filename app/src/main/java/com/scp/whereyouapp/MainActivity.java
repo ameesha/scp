@@ -677,7 +677,10 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
         // record 0 contains the MIME type, record 1 is the AAR, if presen
         String friend = new String(msg.getRecords()[0].getPayload());
         Log.e("NFC Tag:", friend);
-        FriendsActivity friendsAct = new FriendsActivity();
-        friendsAct.addNFCFriend(friend);
+        intent = new Intent(MainActivity.this, FriendsActivity.class);
+        Bundle bundle = new Bundle();
+        bundle.putString("NFCUserName",friend);
+        intent.putExtras(bundle);
+        startActivity(intent);
     }
 }
