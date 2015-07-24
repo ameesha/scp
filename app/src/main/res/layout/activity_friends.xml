@@ -33,12 +33,12 @@
             android:layout_marginTop="28dp" />
 
         <Button
-            android:id="@+id/addFriend"
+            android:id="@+id/refresh"
             android:layout_width="100dp"
             android:layout_height="wrap_content"
-            android:text="Add"
-            android:textSize="20dp"
-            android:onClick="onAddFriendClick"
+            android:text="Refresh"
+            android:textSize="15dp"
+            android:onClick="onRefreshClick"
             android:layout_alignBottom="@+id/username"
             android:layout_alignParentRight="true"
             android:layout_alignParentEnd="true"
@@ -53,6 +53,19 @@
             android:layout_alignParentEnd="true"
             android:layout_below="@+id/friend">
         </ListView>
+
+        <Button
+            android:id="@+id/addFriend"
+            android:layout_width="50dp"
+            android:layout_height="wrap_content"
+            android:text="Add"
+            android:textSize="15dp"
+            android:onClick="onAddFriendClick"
+            android:layout_below="@+id/refresh"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:layout_alignLeft="@+id/refresh"
+            android:layout_alignStart="@+id/refresh" />
 
     </RelativeLayout>
     <ListView
