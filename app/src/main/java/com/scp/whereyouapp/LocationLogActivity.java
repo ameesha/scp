@@ -64,21 +64,28 @@ public class LocationLogActivity extends ActionBarActivity {
         else{
             return ret;
         }
-        for (String s: current_numbers.split("Number: ")){
-            String numAndTime = null;
+        for (String s: current_numbers.split("NEWLINE ")){
             if (s.length() == 0){
                 continue;
             }
-            for (String n: s.split("Time: ")){
-                if (numAndTime == null){
-                    numAndTime = "Texted " + n;
-                }
-                else{
-                    numAndTime = numAndTime + " at " + n;
-                }
-            }
-            ret.add(numAndTime);
+            String value = s;
+            ret.add(value);
         }
+//        for (String s: current_numbers.split("Number: ")){
+//            String numAndTime = null;
+//            if (s.length() == 0){
+//                continue;
+//            }
+//            for (String n: s.split("Time: ")){
+//                if (numAndTime == null){
+//                    numAndTime = "Texted " + n;
+//                }
+//                else{
+//                    numAndTime = numAndTime + " at " + n;
+//                }
+//            }
+//            ret.add(numAndTime);
+//        }
         return ret;
     }
 

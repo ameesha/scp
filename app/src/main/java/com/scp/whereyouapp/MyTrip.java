@@ -93,7 +93,7 @@ public class MyTrip extends BaseTrip {
             map.put("allowedFriends", friendsList);
             firebaseRef.child("trips").child(Globals.getUsername()).updateChildren(map);
         }
-        //updateLocation(cur_loc);
+        updateLocation(cur_loc);
     }
 
     @Override
@@ -134,6 +134,7 @@ public class MyTrip extends BaseTrip {
     private void saveTextedNumbers(ArrayList<String> numbers){
         SharedPreferences sp = this.context.getSharedPreferences("notificationLog", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = sp.edit();
+
         boolean exists = sp.contains("texted_numbers");
         String current_numbers = null;
         if (exists){
@@ -142,14 +143,15 @@ public class MyTrip extends BaseTrip {
         String currentDateTimeString = DateFormat.getDateTimeInstance().format(new Date());
         for (int i = 0; i < numbers.size(); i++){
             if (current_numbers == null){
-                current_numbers = "Number: " + numbers.get(i) + " " + currentDateTimeString;
+                current_numbers = "NEWLINE Texted " + numbers.get(i) + " at " + currentDateTimeString;
             }
             else{
-                current_numbers = current_numbers + " Number: "  + numbers.get(i) + " " + currentDateTimeString;
+                current_numbers = current_numbers + " NEWLINE Texted "  + numbers.get(i) + " at " + currentDateTimeString;
             }
         }
         editor.putString("texted_numbers", current_numbers);
         editor.commit();
+
     }
 
     public void cancel() {
@@ -185,7 +187,7 @@ public class MyTrip extends BaseTrip {
         }
     }
 
-    private void updatePingLog() {
+    public void updatePingLog() {
         if(Globals.getUid() != null && Globals.getUsername() != null) {
             firebaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
@@ -194,12 +196,35 @@ public class MyTrip extends BaseTrip {
                         DataSnapshot log = snapshot.child("trips").child(Globals.getUsername()).child("pingLog");
 
                         Map<String, Object> ret = (Map<String, Object>) log.getValue();
+                        SharedPreferences sp = MyTrip.this.context.getSharedPreferences("notificationLog", Context.MODE_PRIVATE);
+                        SharedPreferences.Editor editor = sp.edit();
+                        boolean exists = sp.contains("texted_numbers");
+                        String current_numbers = null;
+                        if (exists){
+                            current_numbers = sp.getString("texted_numbers", current_numbers);
+                        }
 
                         for (Map.Entry<String, Object> entry : ret.entrySet()) {
                             Map.Entry<String, String> logEntry = (Map.Entry<String, String>) ((Map<String, String>) entry.getValue()).entrySet().toArray()[0];
                             Log.e("PingLog", logEntry.toString());
                             pingLog.add(logEntry);
+
+                            String user = logEntry.toString().split("=")[0];
+                            String dateTime = logEntry.toString().split("=")[1];
+//                            String user = ((HashMap) entry.getValue()).entrySet().iterator().next().getKey();
+//                            String dateTime = ((HashMap) entry.getValue()).entrySet().iterator().next().getValue();
+
+                            if (current_numbers == null){
+                                current_numbers = "";
+                            }
+                            String to_add = "NEWLINE " + user + " pinged at " + dateTime;
+                            if (!current_numbers.contains(to_add)){
+                                current_numbers += "NEWLINE " + user + " pinged at " + dateTime;
+                            }
+
                         }
+                        editor.putString("texted_numbers", current_numbers);
+                        editor.commit();
                     }
                 }
 
