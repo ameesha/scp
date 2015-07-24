@@ -2,6 +2,10 @@ package com.scp.whereyouapp;
 
 import android.location.Location;
 
+import com.google.android.gms.maps.model.LatLng;
+
+import java.util.HashMap;
+
 /**
  * Created by Christine on 7/15/2015.
  */
@@ -9,6 +13,7 @@ public class Globals {
     private static String uid;
     private static String username;
     private static Location location;
+    private static HashMap<String, LatLng> favouriteLocations = new HashMap<>();
 
     private static boolean enablePush = true;
     private static boolean enablePing = true;
@@ -44,5 +49,20 @@ public class Globals {
     }
     public static boolean getEnablePing(){
         return enablePing;
+    }
+
+    public static void addFaveLocation(String name, LatLng latlng){
+        favouriteLocations.put(name, latlng);
+        return;
+    }
+    public static HashMap<String, LatLng> getFaveLocations(){
+        return favouriteLocations;
+    }
+    public static void deleteFaveLocation(String name){
+        LatLng value = favouriteLocations.get(name);
+        if (value != null){
+            favouriteLocations.remove(name);
+        }
+        return;
     }
 }
