@@ -43,6 +43,7 @@
             android:layout_height="wrap_content"
             android:layout_toRightOf="@id/current_location"
             android:layout_alignTop="@id/current_location"
+            android:visibility="gone"
             android:text="Update"
             android:textAlignment="center"
             android:textColor="#FFFFFF"
