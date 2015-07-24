@@ -89,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
     private Firebase firebaseRef;
     private ArrayList<String> numbers;
     private MyTrip myTrip;
+    private MyTrip permTrip;
     private LatLng myLocation;
 
     private CallbackManager callbackManager;
@@ -113,6 +114,8 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        Log.e("CREATE", "OnCreateCalled");
         if( getIntent().getBooleanExtra("Exit me", false)){
             finish();
             return; // add this to prevent from doing unnecessary stuffs
@@ -170,6 +173,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
         destinationMarker = null;
         currentLocationMarker = null;
         myTrip = null;
+        permTrip = null;
         setSupportActionBar(toolbar);
 
         mDrawerList = (ListView)findViewById(R.id.navList);
@@ -308,8 +312,9 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
         contactListButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                tripFields.setVisibility(View.GONE);
-                contactList.setVisibility(View.VISIBLE);
+                Intent intent = new Intent(MainActivity.this, ContactsActivity.class);
+                mDrawerLayout.closeDrawers();
+                startActivity(intent);
             }
         });
 
@@ -397,6 +402,10 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
                 }
                 LatLng cur_loc = new LatLng(newLoc.getLatitude(), newLoc.getLongitude());
                 myLocation = cur_loc;
+
+                if(permTrip == null) {
+                    permTrip = new MyTrip(cur_loc, null, null, null, null, -1, context);
+                }
                 updateActiveTrips(cur_loc);
                 String addr;
 
@@ -413,6 +422,8 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
 //                map.addMarker(new MarkerOptions().position(work).title("Work").snippet(getAddress(work.latitude, work.longitude)).icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_AZURE)));
                 map.setMyLocationEnabled(true);
                 map.moveCamera(CameraUpdateFactory.newLatLngZoom(cur_loc, 13));
+
+
 //
 //                if(Math.abs(cur_loc.latitude - testLat) < 0.001 && Math.abs(cur_loc.longitude - testLong) < 0.001 && text) {
 //                    text = false;
@@ -542,10 +553,15 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
 
     private void updateActiveTrips(LatLng location) {
         if(myTrip != null) {
+            Log.e("MyTrip", myTrip.getDestination().toString());
             if(myTrip.updateLocation(location)) {
                 Log.e("Trip", "Completed");
                 cancelButton.callOnClick();
             }
+        }
+        if(permTrip != null) {
+            Log.e("PermTrip", "not null");
+            permTrip.updateLocation(location);
         }
     }
 
@@ -588,10 +604,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
                     mDrawerLayout.closeDrawers();
                     startActivity(intent);
                 } else if (value == "Trips") {
-//                    Intent intent = new Intent(MainActivity.this, TripActivity.class);
-//                    mDrawerLayout.closeDrawers();
-//                    startActivity(intent);
-                    Intent intent = new Intent(MainActivity.this, ContactsActivity.class);
+                    Intent intent = new Intent(MainActivity.this, TripActivity.class);
                     mDrawerLayout.closeDrawers();
                     startActivity(intent);
                 } else {
@@ -622,6 +635,7 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
         if (NfcAdapter.ACTION_NDEF_DISCOVERED.equals(getIntent().getAction()) || NfcAdapter.ACTION_TECH_DISCOVERED.equals(getIntent().getAction())) {
             processIntent(getIntent());
         }
+        Log.e("RESUME", "OnResumeCalled");
     }
 
     @Override
@@ -675,15 +689,25 @@ public class MainActivity extends AppCompatActivity implements NfcAdapter.Create
     void processIntent(Intent intent) {
         Parcelable[] rawMsgs = intent.getParcelableArrayExtra(
                 NfcAdapter.EXTRA_NDEF_MESSAGES);
-        // only one message sent during the beam
-        NdefMessage msg = (NdefMessage) rawMsgs[0];
-        // record 0 contains the MIME type, record 1 is the AAR, if presen
-        String friend = new String(msg.getRecords()[0].getPayload());
-        Log.e("NFC Tag:", friend);
-        intent = new Intent(MainActivity.this, FriendsActivity.class);
-        Bundle bundle = new Bundle();
-        bundle.putString("NFCUserName",friend);
-        intent.putExtras(bundle);
-        startActivity(intent);
+        if(rawMsgs != null) {
+            // only one message sent during the beam
+            NdefMessage msg = (NdefMessage) rawMsgs[0];
+            // record 0 contains the MIME type, record 1 is the AAR, if presen
+            String friend = new String(msg.getRecords()[0].getPayload());
+            Log.e("NFC Tag:", friend);
+            intent = new Intent(MainActivity.this, FriendsActivity.class);
+            Bundle bundle = new Bundle();
+            bundle.putString("NFCUserName", friend);
+            intent.putExtras(bundle);
+
+            startActivity(intent);
+        }
+
+        String[] contacts = intent.getStringArrayExtra("contactNumbers");
+        if(contacts != null) {
+            for(String contact : contacts) {
+                numbers.add(contact);
+            }
+        }
     }
 }

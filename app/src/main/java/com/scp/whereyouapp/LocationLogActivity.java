@@ -126,6 +126,7 @@ public class LocationLogActivity extends ActionBarActivity {
                 }
                 else if (value == "Home"){
                     Intent intent = new Intent(LocationLogActivity.this, MainActivity.class);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_REORDER_TO_FRONT);
                     //Context packageContext
                     mDrawerLayout.closeDrawers();
                     startActivity(intent);

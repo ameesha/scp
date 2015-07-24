@@ -26,6 +26,7 @@ import java.util.Map;
 public class LoginActivity extends Activity {
     private Firebase firebaseRef;
     private String username;
+    private String phoneNumber;
     private TextView loginWarning;
 
     public void onCreate(Bundle savedInstanceState) {
@@ -38,6 +39,8 @@ public class LoginActivity extends Activity {
 //      A child node's key cannot be longer than 768 bytes, nor deeper than 32 levels.
 //      It can include any unicode characters except for . $ # [ ] / and ASCII control characters 0-31 and 127.
         username = ((EditText) findViewById(R.id.username)).getText().toString().trim();
+        phoneNumber = ((EditText) findViewById(R.id.number)).getText().toString().trim();
+
         loginWarning = (TextView) findViewById(R.id.loginWarning);
 
 
@@ -61,12 +64,14 @@ public class LoginActivity extends Activity {
                         Globals.setUsername(username);
                         Globals.setEnablePing(true);
                         Globals.setEnablePush(true);
+                        Globals.setPhoneNumber(phoneNumber);
                         usernameToUidMap.put(Globals.getUsername(), Globals.getUid());
                         firebaseRef.child("usernameToUid").updateChildren(usernameToUidMap);
 
                         usersMap.put("username", Globals.getUsername());
                         usersMap.put("enablePush", Globals.getEnablePush());
                         usersMap.put("enablePing", Globals.getEnablePing());
+                        usersMap.put("phoneNumber", Globals.getPhoneNumber());
                         firebaseRef.child("users").child(Globals.getUid()).updateChildren(usersMap);
                         finish();
                     }

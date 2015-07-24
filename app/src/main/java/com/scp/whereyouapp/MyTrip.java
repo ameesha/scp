@@ -77,11 +77,20 @@ public class MyTrip extends BaseTrip {
 
         Log.e("RUNTIME", "TRIP CREATED: " + reminderTime);
         if(Globals.getUid() != null && Globals.getUsername() != null) {
+            String username = Globals.getUsername();
+
+
+
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("currentLat", cur_loc.latitude);
             map.put("currentLong", cur_loc.longitude);
-            map.put("destLat", dest.latitude);
-            map.put("destLong", dest.longitude);
+
+            if (dest == null) {
+                username = "perm-" + username;
+            } else {
+                map.put("destLat", dest.latitude);
+                map.put("destLong", dest.longitude);
+            }
 //            map.put("allowedFriends", friends);
 
             //test data
@@ -91,16 +100,18 @@ public class MyTrip extends BaseTrip {
             friendsList.add("selinakyle");
 
             map.put("allowedFriends", friendsList);
-            firebaseRef.child("trips").child(Globals.getUsername()).updateChildren(map);
+            firebaseRef.child("trips").child(username).updateChildren(map);
         }
-        updateLocation(cur_loc);
     }
 
     @Override
     public boolean updateLocation(LatLng cur_loc) {
         currentLocation = cur_loc;
+        String username = Globals.getUsername();
 
-        if(Math.abs(cur_loc.latitude - destination.latitude) < 0.001 && Math.abs(cur_loc.longitude - destination.longitude) < 0.001 && text) {
+        if(destination == null) {
+            username = "perm-" + username;
+        } else if(Math.abs(cur_loc.latitude - destination.latitude) < 0.001 && Math.abs(cur_loc.longitude - destination.longitude) < 0.001 && text) {
             text = false;
             for (int i = 0; i < numbersToText.size(); i++) {
                 smsManager.sendTextMessage(numbersToText.get(i), null, Globals.getUsername() + " has arrived at " + getAddress(cur_loc.latitude, cur_loc.longitude), null, null);
@@ -125,7 +136,7 @@ public class MyTrip extends BaseTrip {
             Map<String, Object> map = new HashMap<String, Object>();
             map.put("currentLat", cur_loc.latitude);
             map.put("currentLong", cur_loc.longitude);
-            firebaseRef.child("trips").child(Globals.getUsername()).updateChildren(map);
+            firebaseRef.child("trips").child(username).updateChildren(map);
         }
         updatePingLog();
         return false;
@@ -176,8 +187,9 @@ public class MyTrip extends BaseTrip {
                             pingLog.add(logEntry);
                         }
                         //TODO: store pingLog information in Location Log
-                        firebaseRef.child("trips").child(Globals.getUsername()).removeValue();
                     }
+
+                    firebaseRef.child("trips").child(Globals.getUsername()).removeValue();
                 }
 
                 @Override
@@ -188,12 +200,19 @@ public class MyTrip extends BaseTrip {
     }
 
     public void updatePingLog() {
+
         if(Globals.getUid() != null && Globals.getUsername() != null) {
             firebaseRef.addListenerForSingleValueEvent(new ValueEventListener() {
                 @Override
                 public void onDataChange(DataSnapshot snapshot) {
-                    if(snapshot.child("trips").child(Globals.getUsername()).hasChild("pingLog")) {
-                        DataSnapshot log = snapshot.child("trips").child(Globals.getUsername()).child("pingLog");
+                    String username = Globals.getUsername();
+
+                    if(destination == null) {
+                        username = "perm-" + username;
+                    }
+
+                    if(snapshot.child("trips").child(username).hasChild("pingLog")) {
+                        DataSnapshot log = snapshot.child("trips").child(username).child("pingLog");
 
                         Map<String, Object> ret = (Map<String, Object>) log.getValue();
                         SharedPreferences sp = MyTrip.this.context.getSharedPreferences("notificationLog", Context.MODE_PRIVATE);
