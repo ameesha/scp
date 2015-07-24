@@ -162,6 +162,5 @@ public class MyTrip extends BaseTrip {
             e.printStackTrace();
         }
         return "";
->>>>>>> 7749882ea27c2c0cba84dab6bef4f7ba06d15e51
     }
 }
